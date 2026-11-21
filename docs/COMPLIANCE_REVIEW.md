@@ -26,6 +26,5 @@ Ngày rà soát: 16/11/2026. Phạm vi: pipeline dữ liệu, độ chính xác 
 1. **Ảnh dashboard — đã bổ sung:** ngày 16/11/2026 lưu 9 ảnh cửa sổ Chrome thật, gồm tổng quan, nhận xét, kênh, vùng, sản phẩm, chất lượng, benchmark, lọc Internet và reset. Xem [xác nhận từng bước](SCREENSHOT_REVIEW.md). Không còn thiếu bộ ảnh; phạm vi quan sát desktop và giới hạn kiểm tra được ghi rõ.
 2. **Môi trường vận hành:** đã kiểm chứng local; chưa kiểm tra triển khai phân tán, thiết bị di động, tải đồng thời hoặc xác thực cho dịch vụ công khai.
 3. **Nguồn và phương pháp:** dữ liệu Microsoft là mẫu giả lập; chi phí dùng giá vốn, chưa đủ để tính lợi nhuận ròng. Việc sử dụng AI được mô tả tại [AI_USAGE.md](AI_USAGE.md).
-4. **CI trên GitHub:** đã push và kiểm tra [run 43798469228](https://github.com/winter-1402/RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics/actions/runs/43798469228) của commit `ba17761`. GitHub báo “The job was not started because your account is locked due to a billing issue.” Job chưa chạy bước nào. Chủ repository cần xử lý billing/account rồi chạy lại workflow; không thể kết luận CI đạt từ 32 test local. Xem [minh chứng](../output/evidence/github_ci_status.json).
 
 Các chức năng có mã nguồn và bằng chứng tái lập tương ứng. Trạng thái local, CI và khả năng triển khai được đánh giá riêng; kết quả kiểm thử không được dùng để suy ra mức sẵn sàng production.

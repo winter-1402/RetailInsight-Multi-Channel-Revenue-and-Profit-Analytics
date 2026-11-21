@@ -20,4 +20,4 @@ Khi reset, callback gán ngày qua Session State nhưng widget cũng truyền gi
 
 ## Giới hạn của lượt quan sát
 
-Lượt này trực tiếp kiểm tra các trang và thao tác lọc kênh/reset ở kích thước desktop. Bộ lọc vùng/danh mục/sản phẩm/đại lý, ngày đảo, dữ liệu rỗng và CSV còn có kiểm thử tự động; không gọi các trường hợp đó là đã thao tác bằng tay trong lượt chụp này. Chưa xác nhận trên thiết bị di động hoặc trình duyệt khác. Trạng thái billing của tài khoản GitHub ảnh hưởng đến CI và được theo dõi riêng với kết quả kiểm tra giao diện.
+Lượt này trực tiếp kiểm tra các trang và thao tác lọc kênh/reset ở kích thước desktop. Bộ lọc vùng/danh mục/sản phẩm/đại lý, ngày đảo, dữ liệu rỗng và CSV còn có kiểm thử tự động; không gọi các trường hợp đó là đã thao tác bằng tay trong lượt chụp này. Chưa xác nhận trên thiết bị di động hoặc trình duyệt khác.
