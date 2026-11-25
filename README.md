@@ -190,9 +190,7 @@ data/adventureworks/         warehouse sinh theo run, không đưa lên Git
 
 Kiểm thử bao gồm tiền/chiết khấu, giao dịch lỗ, khóa và phép ghép, tháng trống, phạm vi kỳ tăng trưởng, CSV, thay đổi bộ lọc, reset, dữ liệu rỗng, Spark thực, PDF và gói bàn giao. Chi tiết: [docs/VALIDATION.md](docs/VALIDATION.md).
 
-Workflow GitHub Actions tại `.github/workflows/ci.yml` thực hiện nạp dữ liệu, đối chiếu Spark/pandas, kiểm thử và tạo báo cáo. Kết quả CI cần đối chiếu với đúng commit. Quy trình phát triển: [docs/GITHUB.md](docs/GITHUB.md).
-
-Kết quả ngày 17/11/2026 sau khi gom benchmark: **57/57 kiểm thử local đạt**; [log](output/evidence/tests.log) và [mã thoát](output/evidence/test_status.json). Lượt Actions trước đây bị chặn do billing của tài khoản chủ repository; xem [trạng thái và cách chạy lại](docs/VALIDATION.md). Chưa chạy lại CI cho thay đổi này; kết quả local không thay thế xác nhận CI.
+Bộ kiểm thử kiểm tra phép tính KPI, bộ lọc dashboard và kết quả tổng hợp. Xem [log kiểm thử](output/evidence/tests.log) và [mã thoát](output/evidence/test_status.json).
 
 Phạm vi hiện tại dùng Spark `local[2]`, lưu trữ trên filesystem và phục vụ dashboard local. Chưa kiểm chứng vận hành phân tán, nhiều người dùng đồng thời hoặc triển khai công khai có xác thực. Lợi nhuận gộp chưa bao gồm đầy đủ chi phí vận hành, marketing và hoàn trả.
 

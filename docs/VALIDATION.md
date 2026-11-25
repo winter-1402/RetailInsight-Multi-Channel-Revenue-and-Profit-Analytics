@@ -34,14 +34,6 @@ Cùng Parquet, cột và phép tổng hợp; mốc đo gồm đọc, groupby/dis
 
 Tải 5× là bản sao 606.265 dòng, mã đơn/người mua có hậu tố từng bản sao. Không trộn dữ liệu này với dashboard kinh doanh. Chưa kiểm tra cụm phân tán, giới hạn bộ nhớ cực đại hoặc ngưỡng Spark vượt pandas.
 
-## Lưu ý môi trường
-
-Windows có thể in cảnh báo native Hadoop và `ERROR: Access denied` lúc dọn tiến trình Spark, trong khi test và mã thoát Python vẫn thành công. Giữ nguyên log và xem đồng thời mã thoát, kết quả đối chiếu và file đầu ra; không che stack trace/failure thật. Không yêu cầu tải winutils từ nguồn không chính thức.
-
-Kiểm tra GitHub Actions trên đúng commit sau khi push. Kết quả local không thay thế kết quả CI; không dùng badge CI “đạt” trước khi workflow chạy thực tế.
-
-Ngày 16/11/2026, [run 43798469228](https://github.com/winter-1402/RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics/actions/runs/43798469228) cho commit `ba17761` bị GitHub chặn trước khi chạy job vì tài khoản chủ repository bị khóa do billing. Không có step nào được thực thi. Chủ repository xử lý phần tài khoản rồi chọn **Re-run all jobs**, hoặc chạy workflow thủ công cho nhánh. Minh chứng API nằm tại [github_ci_status.json](../output/evidence/github_ci_status.json). Bộ kiểm thử local đạt **34/34**, mã thoát 0; log Spark Windows được giữ nguyên.
-
 ## Bổ sung trong nhánh rà soát
 
 Kiểm tra DimReseller nhiều-một, mã cửa hàng thiếu đúng nghĩa ở Internet, bộ lọc đại lý và reset. Mẫu bán hàng giữ 10 dòng mỗi kênh; mỗi run có pipeline.log thực thi. Pytest dùng `.pytest-tmp` để không phụ thuộc thư mục cache đã có trên máy.
