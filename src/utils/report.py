@@ -76,6 +76,24 @@ def render_figures():
     return destination
 
 
+def benchmark_table(summary):
+    labels = {'pandas': 'pandas', 'duckdb': 'DuckDB', 'spark_sql': 'Spark SQL'}
+    medians = summary.pivot(index='query', columns='engine', values='median_seconds')
+    matched = summary.groupby('query')['exact_match'].all()
+    engines = [engine for engine in labels if engine in medians]
+    return [['Truy vấn', *(f'{labels[engine]} (s)' for engine in engines), 'Khớp']] + [
+        [query, *(f'{medians.loc[query, engine]:.4f}' for engine in engines),
+         'Chính xác' if matched[query] else 'Sai lệch']
+        for query in ['monthly', 'region', 'category', 'customer_segments'] if query in medians.index]
+
+
+def completed_loads(run):
+    for path in sorted(run.glob('load_scale_*/benchmark_summary.csv')):
+        summary = pd.read_csv(path)
+        if not summary.empty and ('complete' not in summary or summary['complete'].all()):
+            yield path, summary
+
+
 def build_markdown_report(output=ROOT / 'docs/BAO_CAO.md'):
     run = current_run()
     fact = pd.read_parquet(run / 'gold/fact_sales.parquet')
@@ -107,7 +125,7 @@ def build_markdown_report(output=ROOT / 'docs/BAO_CAO.md'):
         'Mỗi file có URL, SHA-256, số byte và schema trong manifest; quality JSON lưu số ô thiếu trước–sau theo cột. '
         'DiscountAmount là FLOAT, cho phép sai số đối soát 0,0001 USD/dòng; SalesAmount và TotalProductCost được giữ chính xác với 4 chữ số thập phân.', '',
         '## 3 Pipeline và mô hình dữ liệu', '',
-        'Nguồn Microsoft → Python kiểm tra/làm sạch → Parquet Silver → mart một dòng mặt hàng → Spark SQL/pandas đối chiếu → dashboard và quyết định. '
+        'Nguồn Microsoft → Python kiểm tra/làm sạch → Parquet Silver → mart một dòng mặt hàng → đối chiếu công cụ → dashboard và quyết định. '
         'Dashboard tính lại từ cùng mart khi lọc, trang kiểm chứng đọc đầu ra Spark và benchmark toàn run.', '',
         'Khóa dòng: kênh + SalesOrderNumber + SalesOrderLineNumber. Khóa đơn thêm tiền tố kênh. '
         'Chiều sản phẩm → nhóm → danh mục, vùng, đại lý DimReseller và tiền tệ được ghép nhiều-một; có kiểm tra không nhân đôi doanh thu. '
@@ -130,23 +148,21 @@ def build_markdown_report(output=ROOT / 'docs/BAO_CAO.md'):
     lines += ['', '![Doanh thu và lợi nhuận theo kênh](figures/channel_results.png)', '',
         '*Biểu đồ tổng hợp sinh từ mart, không phải ảnh chụp giao diện.*', '',
         '## 5 Baseline và thực nghiệm', '',
-        'Ba workload tổng hợp doanh thu, giá vốn, lợi nhuận và số đơn theo tháng/kênh, vùng/kênh, danh mục/kênh. '
-        'Hai công cụ đọc cùng Parquet, cùng cột và cùng phép tính. Kiểm tra chính xác từng nhóm bằng assert_frame_equal.', '',
+        'Các truy vấn tổng hợp theo tháng/kênh, vùng/kênh, danh mục/kênh và phân khúc người mua. '
+        'Các công cụ đọc cùng Parquet và dùng cùng phép tính. Kết quả được đối chiếu từng nhóm với pandas.', '',
         f'Mỗi công cụ chạy {environment["repeats"]} lần/truy vấn, thứ tự luân phiên; không loại lượt đầu; không dùng persist/cache Spark; không xóa cache OS. '
         f'JVM khởi động riêng {environment["spark_startup_seconds"]:.2f} giây. Mốc đo gồm đọc, groupby/distinct, sort và collect, không bao gồm tải nguồn hoặc tạo mart.', '',
         f'Cấu hình: {environment["os"]}; Python {environment["python"]}; Spark {environment["spark"]}; '
-        f'{environment["logical_cpus"]} CPU logic; local[2], 4 shuffle partitions; JDK theo JAVA_HOME trong metadata.', '',
-        '| Truy vấn | pandas trung vị s | Spark SQL trung vị s | Độ khớp |', '|---|---:|---:|---|']
-    for name in ['monthly', 'region', 'category']:
-        group = summary.loc[summary['query'].eq(name)].set_index('engine')
-        lines.append(f'| {name} | {group.loc["pandas","median_seconds"]:.4f} | '
-            f'{group.loc["spark_sql","median_seconds"]:.4f} | Chính xác |')
-    for path in sorted(run.glob('load_scale_*/benchmark_summary.csv')):
+        f'{environment["logical_cpus"]} CPU logic; local[2], 4 shuffle partitions; JDK trong metadata.', '']
+    rows = benchmark_table(summary)
+    rows.insert(1, ['---', *(['---:'] * (len(rows[0]) - 2)), '---'])
+    lines.extend('| ' + ' | '.join(row) + ' |' for row in rows)
+    for path, _ in completed_loads(run):
         provenance = json.loads((path.parent / 'synthetic_provenance.json').read_text())
         lines += ['', f'Thử tải {provenance["replication_factor"]}×: {provenance["synthetic_rows"]:,} dòng nhân bản, mã đơn/người mua có hậu tố. '
             'Đây là bản sao đo tải, không phải giao dịch kinh doanh mới. Bảng từng lần đo nằm trong evidence.']
-    lines += ['', 'pandas nhanh hơn Spark SQL trong các phép đo local đã bàn giao. Overhead JVM, lập kế hoạch, shuffle và trả kết quả '
-        'có thể lấn át lợi ích song song ở quy mô này. Chưa xác định ngưỡng chuyển giao, giới hạn cực đại hoặc năng lực của một cụm phân tán.', '',
+    lines += ['', 'Thời gian trung vị phụ thuộc truy vấn và cấu hình. Chi phí lập kế hoạch, shuffle và trả kết quả về Python '
+        'ảnh hưởng các số đo Spark trên máy local. Giới hạn và năng lực cụm phân tán cần phép đo riêng.', '',
         '## 6 Nhận xét và quyết định có điều kiện', '',
         f'1. Reseller chiếm {number_vn(channel.loc["Reseller","revenue_units"]/total["revenue_units"]*100)}% doanh thu nhưng biên gộp '
         f'{number_vn(channel.loc["Reseller","profit_units"]/channel.loc["Reseller","revenue_units"]*100)}%. '
@@ -166,7 +182,7 @@ def build_markdown_report(output=ROOT / 'docs/BAO_CAO.md'):
         'Sản phẩm lỗ vẫn hiển thị; ngày đảo/rỗng có thông báo; bảng xuất dùng USD thay vì đơn vị lưu trữ.', '',
         'Các ca kiểm thử, phương pháp đối chiếu và giới hạn kiểm tra UI: [VALIDATION.md](VALIDATION.md). '
         'Hướng dẫn chạy: [README](../README.md). Demo: [DEMO.md](DEMO.md). Log và dữ liệu mẫu: [output/evidence](../output/evidence).', '',
-        f'[Repository dự án]({PROJECT_REPO}); nhánh triển khai `feat/assignment-completion-20261116`. '
+        f'[Repository dự án]({PROJECT_REPO}). '
         'Trạng thái CI cần kiểm tra trên đúng commit ở GitHub Actions. '
         'Ảnh giao diện thật và xác nhận từng bước: [SCREENSHOT_REVIEW.md](SCREENSHOT_REVIEW.md).', '',
         '## 8 Nguồn và công cụ AI', '',
@@ -355,16 +371,12 @@ def build_report(output=ROOT / 'output' / 'Bao_cao_pipeline_dashboard.pdf'):
       'Mọi số tiền hiển thị bằng USD; giá trị lưu bằng đơn vị nguyên chỉ xuất hiện trong minh chứng kỹ thuật.')
     story.append(PageBreak())
 
-    heading('So sánh pandas và Spark SQL')
-    p('Ba workload: tổng hợp doanh thu, giá vốn, lợi nhuận và số đơn theo (1) tháng/kênh, '
-      '(2) vùng/kênh và (3) danh mục/kênh. Cùng file Parquet, cùng phạm vi, cùng số nguyên tiền; '
-      'độ khớp kiểm tra chính xác từng nhóm, không chỉ tổng toàn bảng.')
-    table([['Truy vấn', 'pandas trung vị s', 'Spark SQL trung vị s', 'Khớp']] + [
-        [name, f'{group.loc["pandas","median_seconds"]:.4f}',
-         f'{group.loc["spark_sql","median_seconds"]:.4f}', 'Chính xác']
-        for name in ['monthly','region','category']
-        for group in [benchmark.loc[benchmark['query'].eq(name)].set_index('engine')]],
-        [4*cm, 4.5*cm, 5*cm, 3.5*cm])
+    heading('So sánh công cụ trên data mart')
+    p('Tổng hợp theo tháng/kênh, vùng/kênh, danh mục/kênh và phân khúc người mua. '
+      'Các công cụ dùng cùng tệp Parquet. So sánh giá trị từng nhóm với baseline pandas.')
+    rows = benchmark_table(benchmark)
+    widths = [4.4*cm, *([9.4*cm / (len(rows[0]) - 2)] * (len(rows[0]) - 2)), 3.2*cm]
+    table(rows, widths)
     p(f'Đầu vào gốc: {manifest["fact_rows"]:,} dòng. Mỗi engine chạy {environment["repeats"]} lần/truy vấn, '
       'thứ tự luân phiên; không loại lượt chạy đầu, không dùng persist/cache của Spark, không xóa cache hệ điều hành. '
       f'Khởi động JVM/Spark đo riêng: {environment["spark_startup_seconds"]:.2f} giây. '
@@ -372,20 +384,16 @@ def build_report(output=ROOT / 'output' / 'Bao_cao_pipeline_dashboard.pdf'):
     p(f'Cấu hình: {escape(environment["os"])}; Python {environment["python"]}; Spark {environment["spark"]}; '
       f'{environment["logical_cpus"]} CPU logic; master local[2]; 4 shuffle partitions. '
       'Máy dùng JDK theo JAVA_HOME; thông tin phiên bản chính xác nằm trong benchmark_environment.json.', 'SmallVN')
-    loads = sorted(run.glob('load_scale_*/benchmark_summary.csv'))
+    loads = list(completed_loads(run))
     if loads:
-        load = loads[-1]
+        load, summary = loads[-1]
         prov = json.loads((load.parent / 'synthetic_provenance.json').read_text())
         p(f'<b>Thử tăng tải.</b> Nhân bản {prov["replication_factor"]} lần tạo {prov["synthetic_rows"]:,} dòng. '
           'Mã đơn và người mua được thêm hậu tố cho từng bản sao. Đây là dữ liệu tải mô phỏng, không phải quan sát mới.')
-        summary = pd.read_csv(load)
-        table([['Truy vấn tăng tải', 'pandas trung vị s', 'Spark SQL trung vị s']] + [
-            [name, f'{g.loc["pandas","median_seconds"]:.4f}', f'{g.loc["spark_sql","median_seconds"]:.4f}']
-            for name in ['monthly','region','category']
-            for g in [summary.loc[summary['query'].eq(name)].set_index('engine')]], [5*cm,6*cm,6*cm])
-    p('Trong các phép đo local này, pandas nhanh hơn Spark SQL. Overhead lập kế hoạch, JVM và trả kết quả '
-      'lấn át lợi ích song song ở kích thước hiện tại. Không suy diễn rằng Spark luôn chậm hơn hoặc hệ thống đã đạt quy mô Big Data. '
-      'Thử nghiệm chỉ khảo sát hai mức tải local, chưa xác định ngưỡng chuyển giao hoặc giới hạn cực đại.')
+        loaded = benchmark_table(summary)
+        table(loaded, [4.4*cm, *([9.4*cm / (len(loaded[0]) - 2)] * (len(loaded[0]) - 2)), 3.2*cm])
+    p('Thời gian trung vị mô tả cấu hình local của từng lượt. Chi phí lập kế hoạch, shuffle và trả kết quả về Python '
+      'ảnh hưởng các số đo Spark. Hiệu năng trên cụm phân tán cần phép đo riêng.')
     p(f'Dung lượng nguồn {manifest["raw_bytes"]/1024**2:.2f} MiB; silver {manifest["silver_bytes"]/1024**2:.2f} MiB; '
       f'mart {manifest["fact_bytes"]/1024**2:.2f} MiB. Chênh lệch gồm cả nén và việc mart chỉ chọn các trường phân tích.', 'SmallVN')
     story.append(PageBreak())
@@ -410,7 +418,7 @@ def build_report(output=ROOT / 'output' / 'Bao_cao_pipeline_dashboard.pdf'):
     p('Chạy lại bằng setup.cmd và run.cmd theo README. Mã nguồn, SQL, dữ liệu mẫu đầu ra, log, '
       'manifest, bảng benchmark và kịch bản demo được bàn giao cùng thư mục. '
       'Gói phân phối ZIP loại dữ liệu thô, môi trường ảo, cache và tài liệu ngoài phạm vi dự án. '
-      'Mã được chuẩn bị trên nhánh feat/assignment-completion-20261116 của repository dự án. '
+      'Mã nguồn và hướng dẫn chạy được lưu trong repository dự án. '
       'Trạng thái CI phải đối chiếu trên đúng commit tại GitHub Actions.')
     heading('Khả năng tái lập và sử dụng công cụ AI')
     p('ChatGPT/Codex hỗ trợ phân tích yêu cầu, thiết kế và rà soát mã, tạo kiểm thử và soạn tài liệu. '

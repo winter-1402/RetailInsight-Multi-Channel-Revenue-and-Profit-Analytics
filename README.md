@@ -1,209 +1,131 @@
-# RetailInsight — Multi-Channel Revenue and Profit Analytics
+# RetailInsight
 
-**Pipeline dữ liệu và dashboard phân tích hiệu quả bán lẻ đa kênh.**
+**Phân tích doanh thu và lợi nhuận bán lẻ đa kênh** · Bài tập lớn CO4033
 
-Dự án xây dựng quy trình từ dữ liệu nguồn đến dashboard phục vụ quản lý bán hàng và tài chính. Hai câu hỏi chính: kênh doanh thu cao có đồng thời sinh lợi cao không; danh mục và vùng nào đáng ưu tiên kiểm tra để cải thiện hiệu quả?
+RetailInsight giúp quản lý bán hàng và tài chính xác định kênh có doanh thu cao nhưng biên gộp thấp, tìm danh mục và vùng đóng góp lợi nhuận, rồi truy vết kết quả về dữ liệu đã kiểm tra. Dự án dùng dữ liệu doanh nghiệp giả lập **Microsoft AdventureWorksDW** theo giấy phép MIT.
 
-Pipeline nạp dữ liệu Microsoft AdventureWorksDW, kiểm tra chất lượng, tạo data mart Parquet, tổng hợp bằng Spark SQL và đối chiếu với pandas. Dashboard Streamlit cho phép lọc và tải kết quả phân tích bằng tiếng Việt.
+[Báo cáo CO4033 PDF](docs/reports/Bao_cao_CO4033_RetailInsight.pdf) · [Bản Word](docs/reports/Bao_cao_CO4033_RetailInsight.docx) · [Hướng dẫn demo](docs/DEMO.md) · [Minh chứng](output/evidence)
 
-**Nguồn dữ liệu:** AdventureWorks là dữ liệu doanh nghiệp **giả lập** do Microsoft cung cấp theo giấy phép MIT. Các kết quả phục vụ minh họa phân tích và kiểm chứng kỹ thuật, không đại diện cho thị trường thực tế.
+![Trang Tổng quan RetailInsight với KPI, bộ lọc và xu hướng doanh thu](docs/screenshots/01-overview.png)
 
-[Báo cáo kỹ thuật](docs/BAO_CAO.md) · [Báo cáo PDF](output/Bao_cao_pipeline_dashboard.pdf) · [Nguồn dữ liệu](docs/DATA_SOURCES.md) · [Kiểm chứng](docs/VALIDATION.md) · [Demo](docs/DEMO.md)
+## Chạy nhanh trên Windows
 
-## Nội dung
-
-- [Dashboard](#dashboard)
-- [Cài đặt và khởi chạy](#cài-đặt-và-khởi-chạy)
-- [Dữ liệu và kết quả tham chiếu](#dữ-liệu-và-kết-quả-tham-chiếu)
-- [Kiến trúc](#kiến-trúc)
-- [Công thức KPI](#công-thức-kpi)
-- [Tái lập thực nghiệm](#tái-lập-thực-nghiệm)
-- [Cấu trúc repository](#cấu-trúc-repository)
-- [Kiểm thử và giới hạn](#kiểm-thử-và-giới-hạn)
-- [Tài liệu và giấy phép](#tài-liệu-và-giấy-phép)
-
-## Dashboard
-
-![Dashboard RetailInsight](docs/screenshots/01-overview.png)
-
-[Xem bộ ảnh và biên bản kiểm tra giao diện](docs/SCREENSHOT_REVIEW.md). Ảnh được chụp tại thời điểm kiểm chứng; bố cục có thể khác giữa các phiên bản.
-
-- **Tổng quan:** doanh thu, lợi nhuận gộp, biên gộp, tăng trưởng tháng, xu hướng và nhận xét theo bộ lọc.
-- **Kênh và thị trường:** so sánh Internet/Reseller, hiệu quả vùng, bảng và CSV bằng USD.
-- **Sản phẩm:** tìm theo danh mục, xếp hạng lợi nhuận cao/thấp, giữ cả sản phẩm lỗ.
-- **Dữ liệu và kiểm chứng:** chất lượng trước–sau, benchmark, công thức và truy vết nguồn.
-
-Thanh bên hỗ trợ khoảng ngày, kỳ chung hai kênh, kênh bán, vùng, danh mục, đại lý và sản phẩm. Thay đổi bộ lọc cập nhật đồng thời KPI, biểu đồ, bảng và CSV kinh doanh. Trang kiểm chứng sử dụng toàn bộ run và được ghi nhãn riêng. Có nút đặt lại và thông báo cho ngày thiếu, ngày đảo chiều hoặc phạm vi không có dữ liệu.
-
-## Cài đặt và khởi chạy
-
-```bash
-git clone https://github.com/winter-1402/RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics.git
-cd RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics
-git switch feat/assignment-completion-20261116
-```
-
-Yêu cầu: **Python 3.11 hoặc 3.12**, **JDK 17+**, `JAVA_HOME` trỏ đến JDK. Không cần SQL Server, SSMS, Docker, Hadoop/HDFS, Power BI hoặc tài khoản Kaggle.
-
-### Windows
+Cần **Python 3.12 64-bit**, Git để clone và kết nối mạng cho lần cài đặt đầu tiên. **JDK 17 hoặc 21** dùng cho benchmark và bộ kiểm thử Spark. Hai lệnh nạp dữ liệu và mở dashboard chạy trong Python.
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --no-cache-dir -r requirements.txt
-.\run.cmd all
+git clone --branch finish/retailinsight https://github.com/winter-1402/RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics.git
+cd RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics
+.\setup.cmd
+.\run.cmd pipeline
 .\run.cmd dashboard
 ```
 
-Mở **http://127.0.0.1:8501**. Nếu đã có dữ liệu và môi trường, chỉ cần `run.cmd dashboard`.
+Mở **http://127.0.0.1:8501**. Script cài các phiên bản trong `requirements.txt` vào `.venv`, tách thư viện Python toàn máy và kiểm tra tương thích bằng `pip check`. PowerShell có thể chạy trực tiếp các tệp `.cmd` với execution policy hiện có.
 
-`run.cmd` dùng được khi PowerShell chặn script `.ps1`; không cần đổi execution policy. Kiểm tra `JAVA_HOME` bằng `echo $env:JAVA_HOME`; Spark dùng JDK tại biến này. Nên dành khoảng 3 GB dung lượng trống cho cài đặt và file tạm.
+### Chạy theo mục tiêu
+
+| Lệnh Windows | Kết quả |
+|---|---|
+| `run.cmd pipeline` | Tải các CSV cần thiết nếu còn thiếu, kiểm tra, lưu Silver và tạo mart Gold. |
+| `run.cmd dashboard` | Mở dashboard Streamlit trên cổng 8501. |
+| `run.cmd benchmark` | Đo 4 nhóm truy vấn trên mart 1× bằng pandas, DuckDB và Spark SQL, 3 lượt mỗi công cụ. |
+| `run.cmd load-test` | Đo lại trên 606.265 dòng nhân bản 5×, ghi riêng với dữ liệu kinh doanh. |
+| `run.cmd sql-benchmark` | Đo 8 truy vấn JOIN, filter, group và window bằng pandas/Spark SQL, 5 lượt mỗi công cụ. |
+| `run.cmd test` | Chạy pytest, lưu trạng thái và xuất minh chứng từ lượt nạp hiện hành. |
+| `run.cmd report` | Tạo PDF kỹ thuật, Markdown và biểu đồ từ lượt nạp đã benchmark. |
+| `run.cmd package` | Xuất minh chứng và gói ZIP với mã nguồn, SQL, tài liệu và dữ liệu mẫu. |
+| `run.cmd all` | Nạp dữ liệu, đo 1×, xuất báo cáo kỹ thuật, kiểm thử và đóng gói. |
+| **`run.cmd technical`** | Thực hiện `all` cùng thử tải 5× và bộ Q1–Q8. Dùng để kiểm chứng toàn bộ bài. |
 
 ### Linux và macOS
 
+Với Python 3.12 và `JAVA_HOME` trỏ tới JDK 17 hoặc 21, chạy tại thư mục kho mã.
+
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+python -m pip check
 python -m src.pipeline.retail --download
 python -m src.benchmark.mart --repeats 3
+python -m src.benchmark.mart --scale 5 --repeats 3
+python -m src.benchmark.runner --repeats 5
 python -m src.utils.report
 python -m src.utils.delivery --verify --package
-python -m streamlit run dashboard/dashboard.py
+python -m streamlit run dashboard/dashboard.py --server.address 127.0.0.1
 ```
 
-Xuất PDF tiếng Việt cần Arial trên Windows hoặc DejaVu Sans trên Linux (`fonts-dejavu-core`). macOS có thể cung cấp cặp font hợp lệ trong `assets/fonts/`; xem hàm `register_fonts` trong `src/utils/report.py`.
+PDF kỹ thuật dùng Arial trên Windows hoặc DejaVu Sans trên Linux. Trên macOS có thể cài DejaVu Sans hoặc dùng cặp font tương thích trong `assets/fonts/` theo [mã tạo báo cáo](src/utils/report.py).
 
-## Dữ liệu và kết quả tham chiếu
+## Kết quả kinh doanh
 
-[**Mở dataset chính thức của Microsoft**](https://github.com/microsoft/sql-server-samples/tree/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script)
+**121.253 dòng bán hàng · 31.455 đơn · 29/12/2010 đến 28/01/2014**
 
-Nguồn được ghim commit `b47eadc85277f72843647223cde53aa1b85ffcb8`: 8 bảng, **121.253 dòng bán hàng**, **31.455 đơn**, từ **29/12/2010 đến 28/01/2014**. Script tự tải CSV; không phải tải hoặc khôi phục file `.bak`.
+| KPI | Giá trị | Cách tính |
+|---|---:|---|
+| Doanh thu thuần | 109.809.274,20 USD | Tổng `SalesAmount` sau chiết khấu. |
+| Lợi nhuận gộp | 12.551.366,25 USD | Doanh thu thuần trừ tổng `TotalProductCost`. |
+| Biên lợi nhuận gộp | 11,4302% | Lợi nhuận gộp chia doanh thu thuần × 100. |
+| Tăng trưởng tháng 10/2013 | +36,4968% | Tỷ lệ thay đổi so với 09/2013 trong phạm vi đủ kỳ cho hai kênh. |
 
-| Chỉ số | Giá trị |
-|---|---:|
-| Doanh thu sau chiết khấu | 109.809.274,2030 USD |
-| Giá vốn | 97.257.907,9547 USD |
-| Lợi nhuận gộp | 12.551.366,2483 USD |
-| Biên lợi nhuận gộp | 11,430151% |
-| Tăng trưởng 10/2013 so với 09/2013 | +36,4968% |
+Reseller chiếm **73,26%** doanh thu nhưng biên gộp chỉ **0,58%**. Internet đạt biên **41,15%**. Xe đạp đóng góp **83,78%** lợi nhuận gộp, trong đó Xe đạp tại Reseller lỗ gộp khoảng **990.700 USD**. Kết quả gợi ý rà soát giá vốn và chiết khấu nhóm này theo đại lý trước khi thay đổi chính sách bán. Cần thêm dữ liệu vận hành, marketing, hoàn trả và tồn kho để đánh giá quyết định trên dữ liệu thật.
 
-![Biểu đồ doanh thu và lợi nhuận gộp theo kênh](docs/figures/channel_results.png)
+Dashboard có các trang **Tổng quan**, **Kênh và thị trường**, **Sản phẩm**, **Dữ liệu và kiểm chứng**. Các KPI, biểu đồ, bảng và CSV kinh doanh dùng cùng bộ lọc ngày, kênh, vùng, danh mục, sản phẩm và đại lý. Chọn **Kỳ chung hai kênh** để đối chiếu 01/01/2011 đến 31/10/2013. [Ảnh giao diện và ca kiểm chứng](docs/SCREENSHOT_REVIEW.md)
 
-*Hình tổng hợp được sinh trực tiếp từ data mart, không phải ảnh chụp giao diện.*
-
-Reseller kết thúc ghi nhận ngày 29/11/2013, Internet ngày 28/01/2014. KPI tăng trưởng chỉ dùng cặp tháng nằm trọn trong phạm vi nguồn của kênh đang chọn và khoảng lọc. Không diễn giải mức giảm ở biên dataset thành suy giảm nhu cầu. Cờ đủ kỳ chỉ xét biên thời gian, không bảo đảm nguồn không bỏ sót giao dịch.
-
-## Kiến trúc
+## Kiến trúc và thực nghiệm
 
 ```mermaid
 flowchart LR
-    A[Microsoft CSV ghim commit] --> B[Python kiểm tra và làm sạch]
-    B --> Q[Bản ghi lỗi kèm lý do]
-    B --> C[Parquet Silver và data mart]
-    C --> D[Spark SQL tổng hợp]
-    C --> E[pandas baseline]
-    D --> F[Đối chiếu kết quả và đo thời gian]
-    E --> F
-    C --> G[Streamlit lọc và phân tích]
-    F --> G
-    G --> H[Insight và quyết định có điều kiện]
+    A[CSV AdventureWorksDW] --> B[Kiểm tra và làm sạch]
+    B --> C[Parquet Silver và mart Gold]
+    B --> Q[Cách ly và báo cáo chất lượng]
+    C --> D[Benchmark mart: pandas, DuckDB, Spark SQL]
+    C --> E[Dashboard Streamlit]
+    D --> E
+    A --> F[Benchmark Q1–Q8: pandas và Spark SQL]
 ```
 
-Mart có grain **một dòng mặt hàng trong đơn**. Khóa gồm kênh, số đơn và số dòng. Ghép chiều nhiều-một có kiểm tra; không cho phép nhân đôi doanh thu. Mỗi lần nạp tạo run riêng, chỉ công bố `current.txt` sau khi hoàn tất. Lỗi nạp không thay thế lượt thành công trước đó.
+Mart lưu một dòng cho mỗi mặt hàng trên đơn, khóa gồm kênh, số đơn và số dòng. Tiền dùng số nguyên theo **1/10.000 USD** để so khớp chính xác. Mỗi lượt nạp ghi manifest, hash nguồn và bảng chất lượng trước–sau. `current.txt` chuyển sang lượt mới sau khi mart hoàn thành. [Nguồn và schema](docs/DATA_SOURCES.md)
 
-## Công thức KPI
+| Thực nghiệm | Thiết kế | Minh chứng |
+|---|---|---|
+| Mart, 1× và 5× | Cùng Parquet, cùng phép tính. Đo từ mở tệp đến nhận bảng kết quả. Ghi min, trung vị và max, so khớp từng dòng nhóm với pandas. | [1×](output/evidence/benchmark_summary.csv) · [5×](output/evidence/load_scale_5_benchmark_summary.csv) · [Cấu hình](output/evidence/benchmark_environment.json) · [EXPLAIN](output/evidence/sql_plans.txt) |
+| Q1–Q8 | Dùng các bảng đã nạp vào pandas và Spark temporary views. Đo riêng thời gian chuẩn bị và khởi động Spark. | [Run và cấu hình](output/sql_benchmark/README.md) · [Kế hoạch kiểm thử](docs/SPARK_SQL_TEST_PLAN.md) |
+| Tính đúng và khả năng tái lập | Kiểm tra KPI từ CSV gốc, khóa, ngoại lệ, lọc/reset, trường hợp dữ liệu rỗng, kết quả Spark thực và gói ZIP. | [Biên bản kiểm chứng](docs/VALIDATION.md) · [Log pytest](output/evidence/tests.log) |
 
-| KPI | Công thức |
-|---|---|
-| Doanh thu thuần | SUM(SalesAmount); nguồn đã trừ DiscountAmount |
-| Lợi nhuận gộp | SUM(SalesAmount − TotalProductCost) |
-| Biên gộp | Tổng lợi nhuận gộp / tổng doanh thu × 100 |
-| Tăng trưởng tháng | (Doanh thu tháng / doanh thu tháng lịch trước − 1) × 100 |
+Hai bộ benchmark đo hai kiểu tải khác nhau. Mỗi kết quả mô tả cấu hình local đã ghi trong minh chứng. Khả năng mở rộng trên cụm phân tán cần được đo riêng.
 
-Tiền giữ bằng số nguyên **1/10.000 USD**, chỉ làm tròn khi hiển thị. Không trừ chiết khấu hai lần, không lấy trung bình biên từng dòng, không loại giao dịch lỗ. Mẫu số 0 hoặc chưa có kỳ trước trả về không xác định. Lợi nhuận gộp chưa trừ marketing/vận hành; nguồn không có hoàn trả để điều chỉnh thêm.
-
-## Tái lập thực nghiệm
-
-[Kế hoạch kiểm thử Spark SQL, baseline và bộ truy vấn Q1–Q8](docs/SPARK_SQL_TEST_PLAN.md).
-
-```powershell
-.\run.cmd pipeline     # tải nếu thiếu, kiểm tra, tạo mart
-.\run.cmd benchmark    # 3 workload × 3 lần × 2 công cụ
-.\run.cmd sql-benchmark # Q1–Q8 × 5 lần × pandas/Spark SQL
-.\run.cmd load-test    # tùy chọn: 5 bản sao để thử tải
-.\run.cmd test         # kiểm thử và lưu log
-.\run.cmd report       # PDF và hình tổng hợp từ dữ liệu hiện hành
-.\run.cmd package      # xuất minh chứng và gói phân phối ZIP
-```
-
-Benchmark mart dùng cùng Parquet, cùng cột và phép tổng hợp; mốc đo gồm đọc, tổng hợp, distinct, sắp xếp và trả kết quả. Khởi động JVM đo riêng; không loại lượt đầu và không xóa cache hệ điều hành. Kết quả được so sánh chính xác **từng nhóm**, không chỉ tổng chung.
-
-Bộ Q1–Q8 đọc chín bảng AdventureWorks riêng để đo filter, JOIN, GROUP BY và window. Mã và SQL nằm trong `src/benchmark/`, kiểm thử trong `tests/benchmark/`; kết quả lưu tại [output/sql_benchmark](output/sql_benchmark/README.md). Q1 dùng ngưỡng 100 USD; Q7 nhóm theo loại hình đại lý vì nguồn không có phương thức thanh toán giao dịch.
-
-Q1–Q8 nạp CSV đã kiểm tra vào pandas và temporary view Spark một lần trước phép đo; truy vấn chạy trong bộ nhớ, không đọc/ghi Parquet. Run mới chỉ có thư mục `results/` và `plans/`, không tạo `tables/` hoặc `queries/`; SQL thực thi và hash được lưu trong `environment.json`. Thời gian chuẩn bị và nạp bảng Spark được ghi riêng. Không so trực tiếp thời gian mới với run Parquet cũ.
-
-Trên máy mới, tải các bảng còn thiếu (file nguồn đã có được giữ nguyên), sau đó chạy:
-
-```bash
-python -c "from src.ingestion.source import download; from src.benchmark.prepare import DIMENSIONS, FACTS; download(tables=[*DIMENSIONS, *FACTS])"
-python -m src.benchmark.runner --repeats 5
-```
-
-Trong lượt đo mart tham chiếu, pandas nhanh hơn Spark SQL ở cả ba truy vấn. Overhead JVM, lập kế hoạch và thu thập kết quả có thể chi phối ở quy mô local này. Các con số và cấu hình nằm tại [output/evidence](output/evidence); thời gian thay đổi theo môi trường. Thử tải 5× là tùy chọn, tách khỏi phân tích kinh doanh. Kết quả không chứng minh khả năng mở rộng trên cụm phân tán.
-
-## Cấu trúc repository
+## Cấu trúc kho mã
 
 ```text
-dashboard/
-├── dashboard.py            giao diện Streamlit
-└── assets/dashboard.css    giao diện và bố cục thích ứng
-src/
-├── ingestion/source.py     tải nguồn ghim phiên bản, đọc schema SQL
-├── cleaning/source.py      chuẩn hóa, kiểm tra và cách ly bản ghi lỗi
-├── pipeline/
-│   ├── retail.py           ghép chiều, dựng mart, công bố run và lineage
-│   └── analytics.py        bộ lọc, KPI tháng, tổng hợp, CSV
-├── benchmark/
-│   ├── prepare.py          chuẩn bị chín bảng, kiểm tra khóa và hash nguồn
-│   ├── queries.py          baseline pandas và thực thi Spark SQL Q1–Q8
-│   ├── runner.py           đo Q1–Q8, đối chiếu và xuất kết quả
-│   ├── mart.py             benchmark ba tổng hợp mart, thử tải tùy chọn
-│   └── sql/Q1.sql…Q8.sql   truy vấn benchmark trên các bảng riêng
-└── utils/
-    ├── config.py           đường dẫn dự án và đơn vị tiền dùng chung
-    ├── files.py            SHA-256 dùng chung
-    ├── report.py           báo cáo PDF và hình dữ liệu
-    └── delivery.py         log kiểm thử, minh chứng và ZIP
-.streamlit/config.toml      chủ đề và cấu hình local
-sql/retail/                 SQL tổng hợp và phân khúc
-tests/                      kiểm thử đơn vị và tích hợp
-└── benchmark/              kiểm thử mart và Q1–Q8 bằng Spark thực
-tasks/                      kế hoạch và checklist thực hiện
-docs/                       báo cáo, nguồn, demo, hướng dẫn GitHub
-output/                     báo cáo PDF, minh chứng và ZIP local
-└── sql_benchmark/          số đo, kết quả, plans và cấu hình Q1–Q8 theo run
-data/raw/                   CSV nguồn Microsoft, schema và giấy phép
-data/adventureworks/         warehouse sinh theo run, không đưa lên Git
+dashboard/          Ứng dụng Streamlit và CSS
+src/ingestion/      Tải dữ liệu ghim phiên bản và đọc schema nguồn
+src/cleaning/       Chuẩn hóa, kiểm tra và cách ly dòng lỗi
+src/pipeline/       Data mart và logic KPI dùng chung
+src/benchmark/      Bộ đo Parquet và Q1–Q8
+src/utils/          Báo cáo kỹ thuật, xuất minh chứng và ZIP
+sql/retail/         Truy vấn mart và phân khúc
+sql/benchmarks/     Nguồn SQL duy nhất của Q1–Q8
+tests/              Kiểm thử đơn vị, tích hợp và dashboard
+docs/reports/       Báo cáo CO4033 PDF và Word bản công khai
+output/             Minh chứng thực thi và báo cáo kỹ thuật
+data/raw/           Dữ liệu mẫu và DDL Microsoft
 ```
 
-## Kiểm thử và giới hạn
+## Xử lý lỗi môi trường
 
-Kiểm thử bao gồm tiền/chiết khấu, giao dịch lỗ, khóa và phép ghép, tháng trống, phạm vi kỳ tăng trưởng, CSV, thay đổi bộ lọc, reset, dữ liệu rỗng, Spark thực, PDF và gói bàn giao. Chi tiết: [docs/VALIDATION.md](docs/VALIDATION.md).
+| Triệu chứng | Kiểm tra và khắc phục |
+|---|---|
+| `No module named ...` hoặc import lỗi trong VS Code | Chạy `setup.cmd`. Dùng **Python: Select Interpreter** để chọn `.venv\Scripts\python.exe` của kho mã đang mở. |
+| `pip check` báo gói ngoài dự án xung đột | Chạy `.venv\Scripts\python.exe -m pip check` trong kho mã. `setup.cmd` dựng lại cấu hình venv ở chế độ tách thư viện hệ thống. |
+| `py` mặc định trỏ Python khác | Dùng Python 3.12 64-bit trên PATH hoặc `py -3.12`. Với venv thuộc Python khác, đổi tên thư mục `.venv` rồi chạy lại `setup.cmd`. |
+| Java 8 hoặc `JAVA_HOME` cũ | Đặt `JAVA_HOME` vào thư mục gốc JDK 17 hoặc 21. Benchmark kiểm tra Java được chọn trước khi khởi động Spark. |
+| Dashboard báo chưa có mart hoặc benchmark | Chạy `run.cmd pipeline` để tạo mart, sau đó `run.cmd benchmark` để mở bảng Hiệu năng. |
 
-Bộ kiểm thử kiểm tra phép tính KPI, bộ lọc dashboard và kết quả tổng hợp. Xem [log kiểm thử](output/evidence/tests.log) và [mã thoát](output/evidence/test_status.json).
-
-Phạm vi hiện tại dùng Spark `local[2]`, lưu trữ trên filesystem và phục vụ dashboard local. Chưa kiểm chứng vận hành phân tán, nhiều người dùng đồng thời hoặc triển khai công khai có xác thực. Lợi nhuận gộp chưa bao gồm đầy đủ chi phí vận hành, marketing và hoàn trả.
+[Hướng dẫn VS Code](https://code.visualstudio.com/docs/python/environments) · [Yêu cầu Java của PySpark 4.0.1](https://spark.apache.org/docs/4.0.1/api/python/getting_started/install.html)
 
 ## Tài liệu và giấy phép
 
-| Tài liệu | Nội dung |
-|---|---|
-| [Nguồn dữ liệu](docs/DATA_SOURCES.md) | Link tải, schema, giấy phép và phạm vi dữ liệu |
-| [Báo cáo kỹ thuật](docs/BAO_CAO.md) | Phương pháp, KPI, thực nghiệm và nhận xét |
-| [Phạm vi chức năng](docs/REQUIREMENTS.md) | Yêu cầu và liên kết minh chứng |
-| [Rà soát kỹ thuật](docs/COMPLIANCE_REVIEW.md) | Trạng thái triển khai và giới hạn |
-| [Kiểm chứng](docs/VALIDATION.md) | Phương pháp kiểm thử, log và môi trường |
-| [Kiểm tra giao diện](docs/SCREENSHOT_REVIEW.md) | Ảnh chụp thực tế và xác nhận từng bước |
-| [Demo](docs/DEMO.md) | Kịch bản kiểm tra ứng dụng |
+[Tổng hợp yêu cầu CO4033](docs/REQUIREMENTS.md) · [Báo cáo kỹ thuật](docs/BAO_CAO.md) · [Công bố sử dụng AI](docs/AI_USAGE.md) · [Quy trình phát hành](docs/GITHUB.md)
 
-Mã nguồn được phân phối theo [MIT License](LICENSE). Thông báo bên thứ ba được giữ tại [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Việc sử dụng công cụ AI được công khai tại [docs/AI_USAGE.md](docs/AI_USAGE.md).
+Mã nguồn theo [MIT License](LICENSE). Giấy phép và nguồn dữ liệu đi kèm trong [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

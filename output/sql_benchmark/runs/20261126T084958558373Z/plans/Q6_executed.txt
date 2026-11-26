@@ -1,0 +1,54 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 5
+   +- *(5) Sort [CountryRegionCode#2368 ASC NULLS LAST, StateProvinceCode#2367 ASC NULLS LAST, rank#2370 ASC NULLS FIRST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 4
+            +- Exchange rangepartitioning(CountryRegionCode#2368 ASC NULLS LAST, StateProvinceCode#2367 ASC NULLS LAST, rank#2370 ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=12229]
+               +- *(4) Filter (rank#2370 <= 3)
+                  +- Window [row_number() windowspecdefinition(CountryRegionCode#2368, StateProvinceCode#2367, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#2370], [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST]
+                     +- WindowGroupLimit [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], row_number(), 3, Final
+                        +- *(3) Sort [CountryRegionCode#2368 ASC NULLS FIRST, StateProvinceCode#2367 ASC NULLS FIRST, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], false, 0
+                           +- AQEShuffleRead coalesced
+                              +- ShuffleQueryStage 3
+                                 +- Exchange hashpartitioning(CountryRegionCode#2368, StateProvinceCode#2367, 4), ENSURE_REQUIREMENTS, [plan_id=12174]
+                                    +- WindowGroupLimit [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], row_number(), 3, Partial
+                                       +- *(2) Sort [CountryRegionCode#2368 ASC NULLS FIRST, StateProvinceCode#2367 ASC NULLS FIRST, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], false, 0
+                                          +- *(2) HashAggregate(keys=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365], functions=[sum(revenue_units#2359L)], output=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L])
+                                             +- AQEShuffleRead coalesced
+                                                +- ShuffleQueryStage 2
+                                                   +- Exchange hashpartitioning(CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, 4), ENSURE_REQUIREMENTS, [plan_id=12093]
+                                                      +- *(1) HashAggregate(keys=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365], functions=[partial_sum(revenue_units#2359L)], output=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, sum#2372L])
+                                                         +- *(1) Project [ResellerKey#2358L, revenue_units#2359L, ResellerName#2365, StateProvinceCode#2367, CountryRegionCode#2368]
+                                                            +- *(1) BroadcastHashJoin [GeographyKey#2363L], [GeographyKey#2366L], LeftOuter, BuildRight, false
+                                                               :- *(1) Project [ResellerKey#2358L, revenue_units#2359L, GeographyKey#2363L, ResellerName#2365]
+                                                               :  +- *(1) BroadcastHashJoin [ResellerKey#2358L], [ResellerKey#2362L], Inner, BuildRight, false
+                                                               :     :- *(1) LocalTableScan [ResellerKey#2358L, revenue_units#2359L]
+                                                               :     +- BroadcastQueryStage 0
+                                                               :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11874]
+                                                               :           +- LocalTableScan [ResellerKey#2362L, GeographyKey#2363L, ResellerName#2365]
+                                                               +- BroadcastQueryStage 1
+                                                                  +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11878]
+                                                                     +- LocalTableScan [GeographyKey#2366L, StateProvinceCode#2367, CountryRegionCode#2368]
++- == Initial Plan ==
+   Sort [CountryRegionCode#2368 ASC NULLS LAST, StateProvinceCode#2367 ASC NULLS LAST, rank#2370 ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(CountryRegionCode#2368 ASC NULLS LAST, StateProvinceCode#2367 ASC NULLS LAST, rank#2370 ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=11895]
+      +- Filter (rank#2370 <= 3)
+         +- Window [row_number() windowspecdefinition(CountryRegionCode#2368, StateProvinceCode#2367, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#2370], [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST]
+            +- WindowGroupLimit [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], row_number(), 3, Final
+               +- Sort [CountryRegionCode#2368 ASC NULLS FIRST, StateProvinceCode#2367 ASC NULLS FIRST, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], false, 0
+                  +- Exchange hashpartitioning(CountryRegionCode#2368, StateProvinceCode#2367, 4), ENSURE_REQUIREMENTS, [plan_id=11889]
+                     +- WindowGroupLimit [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], row_number(), 3, Partial
+                        +- Sort [CountryRegionCode#2368 ASC NULLS FIRST, StateProvinceCode#2367 ASC NULLS FIRST, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], false, 0
+                           +- HashAggregate(keys=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365], functions=[sum(revenue_units#2359L)], output=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L])
+                              +- Exchange hashpartitioning(CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, 4), ENSURE_REQUIREMENTS, [plan_id=11883]
+                                 +- HashAggregate(keys=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365], functions=[partial_sum(revenue_units#2359L)], output=[CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, sum#2372L])
+                                    +- Project [ResellerKey#2358L, revenue_units#2359L, ResellerName#2365, StateProvinceCode#2367, CountryRegionCode#2368]
+                                       +- BroadcastHashJoin [GeographyKey#2363L], [GeographyKey#2366L], LeftOuter, BuildRight, false
+                                          :- Project [ResellerKey#2358L, revenue_units#2359L, GeographyKey#2363L, ResellerName#2365]
+                                          :  +- BroadcastHashJoin [ResellerKey#2358L], [ResellerKey#2362L], Inner, BuildRight, false
+                                          :     :- LocalTableScan [ResellerKey#2358L, revenue_units#2359L]
+                                          :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11874]
+                                          :        +- LocalTableScan [ResellerKey#2362L, GeographyKey#2363L, ResellerName#2365]
+                                          +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11878]
+                                             +- LocalTableScan [GeographyKey#2366L, StateProvinceCode#2367, CountryRegionCode#2368]

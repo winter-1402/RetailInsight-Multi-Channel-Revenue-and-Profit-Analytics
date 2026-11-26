@@ -1,0 +1,33 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 3
+   +- TakeOrderedAndProject(limit=10, orderBy=[revenue_units#2451L DESC NULLS LAST,CustomerKey#23L ASC NULLS FIRST], output=[CustomerKey#23L,revenue_units#2451L,orders#2452L])
+      +- *(3) HashAggregate(keys=[CustomerKey#23L], functions=[sum(revenue_units#24L), count(distinct order_id#19)], output=[CustomerKey#23L, revenue_units#2451L, orders#2452L])
+         +- AQEShuffleRead coalesced
+            +- ShuffleQueryStage 2
+               +- Exchange hashpartitioning(CustomerKey#23L, 4), ENSURE_REQUIREMENTS, [plan_id=12642]
+                  +- *(2) HashAggregate(keys=[CustomerKey#23L], functions=[merge_sum(revenue_units#24L), partial_count(distinct order_id#19)], output=[CustomerKey#23L, sum#2456L, count#2459L])
+                     +- *(2) HashAggregate(keys=[CustomerKey#23L, order_id#19], functions=[merge_sum(revenue_units#24L)], output=[CustomerKey#23L, order_id#19, sum#2456L])
+                        +- AQEShuffleRead coalesced
+                           +- ShuffleQueryStage 1
+                              +- Exchange hashpartitioning(CustomerKey#23L, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=12608]
+                                 +- *(1) HashAggregate(keys=[CustomerKey#23L, order_id#19], functions=[partial_sum(revenue_units#24L)], output=[CustomerKey#23L, order_id#19, sum#2456L])
+                                    +- *(1) Project [order_id#19, CustomerKey#23L, revenue_units#24L]
+                                       +- *(1) BroadcastHashJoin [CustomerKey#23L], [CustomerKey#17L], Inner, BuildRight, false
+                                          :- *(1) LocalTableScan [order_id#19, CustomerKey#23L, revenue_units#24L]
+                                          +- BroadcastQueryStage 0
+                                             +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=12518]
+                                                +- LocalTableScan [CustomerKey#17L]
++- == Initial Plan ==
+   TakeOrderedAndProject(limit=10, orderBy=[revenue_units#2451L DESC NULLS LAST,CustomerKey#23L ASC NULLS FIRST], output=[CustomerKey#23L,revenue_units#2451L,orders#2452L])
+   +- HashAggregate(keys=[CustomerKey#23L], functions=[sum(revenue_units#24L), count(distinct order_id#19)], output=[CustomerKey#23L, revenue_units#2451L, orders#2452L])
+      +- Exchange hashpartitioning(CustomerKey#23L, 4), ENSURE_REQUIREMENTS, [plan_id=12527]
+         +- HashAggregate(keys=[CustomerKey#23L], functions=[merge_sum(revenue_units#24L), partial_count(distinct order_id#19)], output=[CustomerKey#23L, sum#2456L, count#2459L])
+            +- HashAggregate(keys=[CustomerKey#23L, order_id#19], functions=[merge_sum(revenue_units#24L)], output=[CustomerKey#23L, order_id#19, sum#2456L])
+               +- Exchange hashpartitioning(CustomerKey#23L, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=12523]
+                  +- HashAggregate(keys=[CustomerKey#23L, order_id#19], functions=[partial_sum(revenue_units#24L)], output=[CustomerKey#23L, order_id#19, sum#2456L])
+                     +- Project [order_id#19, CustomerKey#23L, revenue_units#24L]
+                        +- BroadcastHashJoin [CustomerKey#23L], [CustomerKey#17L], Inner, BuildRight, false
+                           :- LocalTableScan [order_id#19, CustomerKey#23L, revenue_units#24L]
+                           +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=12518]
+                              +- LocalTableScan [CustomerKey#17L]

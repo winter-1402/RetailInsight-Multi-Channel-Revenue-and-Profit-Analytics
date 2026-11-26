@@ -4,7 +4,7 @@ import pyarrow as pa
 
 from src.utils.config import ROOT
 
-SQL_DIR = ROOT / 'src' / 'benchmark' / 'sql'
+SQL_DIR = ROOT / 'sql' / 'benchmarks'
 MONEY = ['revenue_units', 'cost_units', 'profit_units']
 QUERIES = {
     'Q1': {'title': 'Sản phẩm có giá niêm yết >= 100 USD',

@@ -1,0 +1,289 @@
+{
+  "cpu_model": "Intel(R) Core(TM) Ultra 7 155H",
+  "logical_cpus": 22,
+  "physical_cores": 16,
+  "ram_bytes": 16866729984,
+  "architecture": "AMD64",
+  "started_at_utc": "2026-11-26T08:50:00.296279+00:00",
+  "python": "3.12.8",
+  "os": "Windows-11-10.0.26300-SP0",
+  "pandas": "2.2.3",
+  "pyarrow": "21.0.0",
+  "repeats": 5,
+  "seed": 17,
+  "status": "passed",
+  "timer": "time.perf_counter wall-clock seconds",
+  "timing_boundary": "In-memory query/projection + JOIN/filter/group/window/sort + collect/normalize to pandas; source loading and Spark table setup excluded",
+  "input_mode": "Validated CSV data held in pandas DataFrames and Spark temporary views; no Parquet",
+  "cache_policy": "No application persist/cache; OS cache not cleared; first runs retained",
+  "storage_note": "Local filesystem; disk type/throughput, background load and peak memory not measured",
+  "query_projections": {
+    "Q1": {
+      "title": "Sản phẩm có giá niêm yết >= 100 USD",
+      "tables": {
+        "DimProduct": [
+          "ProductKey",
+          "EnglishProductName",
+          "list_price_units"
+        ]
+      },
+      "sort": [
+        "ProductKey"
+      ]
+    },
+    "Q2": {
+      "title": "Doanh thu theo đại lý",
+      "tables": {
+        "FactResellerSales": [
+          "ResellerKey",
+          "order_id",
+          "revenue_units"
+        ],
+        "DimReseller": [
+          "ResellerKey",
+          "ResellerName"
+        ]
+      },
+      "sort": [
+        "ResellerKey"
+      ]
+    },
+    "Q3": {
+      "title": "Doanh thu theo danh mục và kênh",
+      "tables": {
+        "FactInternetSales": [
+          "ProductKey",
+          "channel",
+          "order_id",
+          "revenue_units",
+          "cost_units",
+          "profit_units"
+        ],
+        "FactResellerSales": [
+          "ProductKey",
+          "channel",
+          "order_id",
+          "revenue_units",
+          "cost_units",
+          "profit_units"
+        ],
+        "DimProduct": [
+          "ProductKey",
+          "ProductSubcategoryKey"
+        ],
+        "DimProductSubcategory": [
+          "ProductSubcategoryKey",
+          "ProductCategoryKey"
+        ],
+        "DimProductCategory": [
+          "ProductCategoryKey",
+          "EnglishProductCategoryName"
+        ]
+      },
+      "sort": [
+        "channel",
+        "ProductCategoryKey"
+      ]
+    },
+    "Q4": {
+      "title": "Doanh thu theo quốc gia/bang của đại lý",
+      "tables": {
+        "FactResellerSales": [
+          "ResellerKey",
+          "order_id",
+          "revenue_units"
+        ],
+        "DimReseller": [
+          "ResellerKey",
+          "GeographyKey"
+        ],
+        "DimGeography": [
+          "GeographyKey",
+          "CountryRegionCode",
+          "StateProvinceCode"
+        ]
+      },
+      "sort": [
+        "CountryRegionCode",
+        "StateProvinceCode"
+      ]
+    },
+    "Q5": {
+      "title": "Doanh thu theo năm-tháng và kênh",
+      "tables": {
+        "FactInternetSales": [
+          "OrderDateKey",
+          "channel",
+          "order_id",
+          "revenue_units",
+          "cost_units",
+          "profit_units"
+        ],
+        "FactResellerSales": [
+          "OrderDateKey",
+          "channel",
+          "order_id",
+          "revenue_units",
+          "cost_units",
+          "profit_units"
+        ],
+        "DimDate": [
+          "DateKey",
+          "FullDateAlternateKey"
+        ]
+      },
+      "sort": [
+        "purchase_month",
+        "channel"
+      ]
+    },
+    "Q6": {
+      "title": "Top 3 đại lý trong mỗi quốc gia/bang",
+      "tables": {
+        "FactResellerSales": [
+          "ResellerKey",
+          "revenue_units"
+        ],
+        "DimReseller": [
+          "ResellerKey",
+          "ResellerName",
+          "GeographyKey"
+        ],
+        "DimGeography": [
+          "GeographyKey",
+          "CountryRegionCode",
+          "StateProvinceCode"
+        ]
+      },
+      "sort": [
+        "CountryRegionCode",
+        "StateProvinceCode",
+        "rank"
+      ]
+    },
+    "Q7": {
+      "title": "Doanh thu và số đơn theo loại hình đại lý",
+      "tables": {
+        "FactResellerSales": [
+          "ResellerKey",
+          "order_id",
+          "revenue_units",
+          "cost_units",
+          "profit_units"
+        ],
+        "DimReseller": [
+          "ResellerKey",
+          "BusinessType"
+        ]
+      },
+      "sort": [
+        "BusinessType"
+      ]
+    },
+    "Q8": {
+      "title": "Top 10 khách hàng Internet theo chi tiêu",
+      "tables": {
+        "FactInternetSales": [
+          "CustomerKey",
+          "order_id",
+          "revenue_units"
+        ],
+        "DimCustomer": [
+          "CustomerKey"
+        ]
+      },
+      "sort": [
+        "revenue_units",
+        "CustomerKey"
+      ],
+      "ascending": [
+        false,
+        true
+      ]
+    }
+  },
+  "source_sha256": {
+    "src\\benchmark\\runner.py": "c354d2677c96b5a369a119f4fb97d908f9f1079e8b38321025d56b0e73e04420",
+    "src\\benchmark\\queries.py": "a1a47b4ae8f80406a0495307db8285ce548e3f87f91e4e55b00ced5081b0c85d",
+    "src\\benchmark\\mart.py": "e27321770cdf9eedab8912de9dead1175767d1cc020f4a6c83b32de9ed620801",
+    "src\\benchmark\\prepare.py": "c66157a78698367a2362366d4e8654c3b5a6d265277bfd23efc0e7f3a9c0d364",
+    "src\\ingestion\\source.py": "e206e3df2409263240c6f7be1d48fee9ed956b367b5b7755edcbb5f3fdec0ecb",
+    "src\\cleaning\\source.py": "adde31da7c2841eb7f65a7a8eac5eff489846b39a4df0359af2fbeffb7bf0bef",
+    "src\\utils\\files.py": "cd53c5950838565fe9658b9ae43b049d22e22feeabbe79503b0e5e3570ee83de"
+  },
+  "preparation_seconds": 5.624595700064674,
+  "sql_sha256": {
+    "Q1": "890d6b77e4d5d512624ea38a147e3d0681212a5d72666ce2f659814b91fc1498",
+    "Q2": "078d248a728cfd9d9424ca15f58baa104162e1a98bbc5d32fd075106d1fa6b7f",
+    "Q3": "f9b88dc6b5b5b8721e36cdcd8c13af847c628421962aa848395151c361deb7b8",
+    "Q4": "ce37e1ca9de1c5cdc0c5204b8eef980e5bc03afb9ef4a4692a7980785ab199c1",
+    "Q5": "750be5fd5a838dd9ef7219a44e9d7541685de48e0f0c9865f8d958976225268c",
+    "Q6": "8a0a1cbe1809940c246d125506112846622a764223fa13ae54bbeec2dba5f36a",
+    "Q7": "e7cda801f23592f7958ac85d7bd684185df03505bbc047b98278df110c000260",
+    "Q8": "79537fede2fbb144abdcc4870d5584575580d4b88222838a67317eb4fe7d40a5"
+  },
+  "sql_statements": {
+    "Q1": "SELECT ProductKey, EnglishProductName, list_price_units\nFROM DimProduct WHERE list_price_units >= 1000000\nORDER BY ProductKey\n",
+    "Q2": "SELECT f.ResellerKey, r.ResellerName, SUM(f.revenue_units) AS revenue_units,\n       COUNT(DISTINCT f.order_id) AS orders\nFROM FactResellerSales f JOIN DimReseller r ON f.ResellerKey = r.ResellerKey\nGROUP BY f.ResellerKey, r.ResellerName ORDER BY f.ResellerKey\n",
+    "Q3": "WITH sales AS (\n    SELECT ProductKey, channel, order_id, revenue_units, cost_units, profit_units FROM FactInternetSales\n    UNION ALL\n    SELECT ProductKey, channel, order_id, revenue_units, cost_units, profit_units FROM FactResellerSales\n)\nSELECT f.channel, c.ProductCategoryKey, c.EnglishProductCategoryName,\n       SUM(f.revenue_units) AS revenue_units, SUM(f.cost_units) AS cost_units,\n       SUM(f.profit_units) AS profit_units, COUNT(DISTINCT f.order_id) AS orders\nFROM sales f JOIN DimProduct p ON f.ProductKey = p.ProductKey\nLEFT JOIN DimProductSubcategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey\nLEFT JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey\nGROUP BY f.channel, c.ProductCategoryKey, c.EnglishProductCategoryName\nORDER BY f.channel, c.ProductCategoryKey NULLS LAST\n",
+    "Q4": "SELECT g.CountryRegionCode, g.StateProvinceCode, SUM(f.revenue_units) AS revenue_units,\n       COUNT(DISTINCT f.order_id) AS orders\nFROM FactResellerSales f JOIN DimReseller r ON f.ResellerKey = r.ResellerKey\nLEFT JOIN DimGeography g ON r.GeographyKey = g.GeographyKey\nGROUP BY g.CountryRegionCode, g.StateProvinceCode\nORDER BY g.CountryRegionCode NULLS LAST, g.StateProvinceCode NULLS LAST\n",
+    "Q5": "WITH sales AS (\n    SELECT OrderDateKey, channel, order_id, revenue_units, cost_units, profit_units FROM FactInternetSales\n    UNION ALL\n    SELECT OrderDateKey, channel, order_id, revenue_units, cost_units, profit_units FROM FactResellerSales\n)\nSELECT DATE_FORMAT(d.FullDateAlternateKey, 'yyyy-MM') AS purchase_month, f.channel,\n       SUM(f.revenue_units) AS revenue_units, SUM(f.cost_units) AS cost_units,\n       SUM(f.profit_units) AS profit_units, COUNT(DISTINCT f.order_id) AS orders\nFROM sales f JOIN DimDate d ON f.OrderDateKey = d.DateKey\nGROUP BY DATE_FORMAT(d.FullDateAlternateKey, 'yyyy-MM'), f.channel\nORDER BY purchase_month, f.channel\n",
+    "Q6": "WITH totals AS (\n    SELECT g.CountryRegionCode, g.StateProvinceCode, f.ResellerKey, r.ResellerName,\n           SUM(f.revenue_units) AS revenue_units\n    FROM FactResellerSales f JOIN DimReseller r ON f.ResellerKey = r.ResellerKey\n    LEFT JOIN DimGeography g ON r.GeographyKey = g.GeographyKey\n    GROUP BY g.CountryRegionCode, g.StateProvinceCode, f.ResellerKey, r.ResellerName\n), ranked AS (\n    SELECT *, ROW_NUMBER() OVER (\n        PARTITION BY CountryRegionCode, StateProvinceCode\n        ORDER BY revenue_units DESC, ResellerKey ASC\n    ) AS rank FROM totals\n)\nSELECT CountryRegionCode, StateProvinceCode, ResellerKey, ResellerName, revenue_units, rank\nFROM ranked WHERE rank <= 3\nORDER BY CountryRegionCode NULLS LAST, StateProvinceCode NULLS LAST, rank\n",
+    "Q7": "SELECT r.BusinessType, SUM(f.revenue_units) AS revenue_units,\n       SUM(f.cost_units) AS cost_units, SUM(f.profit_units) AS profit_units,\n       COUNT(DISTINCT f.order_id) AS orders\nFROM FactResellerSales f JOIN DimReseller r ON f.ResellerKey = r.ResellerKey\nGROUP BY r.BusinessType ORDER BY r.BusinessType NULLS LAST\n",
+    "Q8": "SELECT f.CustomerKey, SUM(f.revenue_units) AS revenue_units,\n       COUNT(DISTINCT f.order_id) AS orders\nFROM FactInternetSales f JOIN DimCustomer c ON f.CustomerKey = c.CustomerKey\nGROUP BY f.CustomerKey ORDER BY revenue_units DESC, f.CustomerKey ASC LIMIT 10\n"
+  },
+  "spark_startup_seconds": 7.1869277998339385,
+  "spark": "4.0.1",
+  "master": "local[2]",
+  "default_parallelism": 2,
+  "driver_heap_max_bytes": 1073741824,
+  "sql_config": {
+    "spark.sql.shuffle.partitions": "4",
+    "spark.sql.session.timeZone": "UTC",
+    "spark.sql.adaptive.enabled": "true",
+    "spark.sql.autoBroadcastJoinThreshold": "10485760b",
+    "spark.sql.execution.arrow.pyspark.enabled": "false",
+    "spark.sql.ansi.enabled": "true"
+  },
+  "spark_memory_config": {
+    "spark.driver.memory": "default",
+    "spark.executor.memory": "default"
+  },
+  "java_version": "openjdk version \"17.0.17\" 2025-10-21\nOpenJDK Runtime Environment Temurin-17.0.17+10 (build 17.0.17+10)\nOpenJDK 64-Bit Server VM Temurin-17.0.17+10 (build 17.0.17+10, mixed mode, sharing)\n",
+  "spark_table_setup_seconds": 2.864823100157082,
+  "diagnostic_queries_after_measurement": 8,
+  "raw_sha256_after_measurement": {
+    "DimAccount.csv": "d77217ff91bbd6d8bde014c93b230a61bce137222dc7c99dd878eb52984b7230",
+    "DimCurrency.csv": "516351755e203c8fbfe3ffc107222a1d093886aafe7d8ef86b044bbe5534141e",
+    "DimCustomer.csv": "1eef367decedb955aea5c92ddbd5aeabad0976a90afcb42f9184daadb3c7ecf3",
+    "DimDate.csv": "b18eddf5523a80655e189cd92bc76d3d9eb64e43b9c903b16ee3411103a556f9",
+    "DimDepartmentGroup.csv": "33e751bde50b67228298b6fa577d02dcda92138e2f7f147ee85d593a89539ea6",
+    "DimEmployee.csv": "fa33e9372202a160757fcbb2121208e03c1289e2c1b073c181ef3bf1db7d11fc",
+    "DimGeography.csv": "b17b3c8ee465fbc55432f3f8288c769e48bcfd14f919314c80d57f8b17742c3f",
+    "DimOrganization.csv": "edc977b97a6899dab5e58cd22888bbba3fd424ee558a9bea6ced75443bf421d5",
+    "DimProduct.csv": "8e06a201098caef67bf6e38a93042738329d9fba5dac0f3dedb3dffbdac5c4f5",
+    "DimProductCategory.csv": "5055fced2a06274665b852927deab5cb851ac54ddd1cbbb63e9d84ba021a11a6",
+    "DimProductSubcategory.csv": "7cc2ac21ee62c7633cc672e1650bf47935c7a165c6b282714d62c4c756f1e994",
+    "DimPromotion.csv": "85ada678c02a51d9425334f0e211788bcc5db6bb551b34ff91d2084593617f63",
+    "DimReseller.csv": "f10435f21d20c02ebe7425327f91c012f4c662dd0e1f415cd97b4bae3bd5dba8",
+    "DimSalesReason.csv": "46a99022c1d5848f887eed5b066b438113c0350086a258cb166df0394ead9d02",
+    "DimSalesTerritory.csv": "d794425d3824bdb8260620e09e43f96c58b2dac1e56d720c8ca457fe40838769",
+    "DimScenario.csv": "f30b6adbbd09eb8fcdcce6766d42baedbbb6cd6695cb2b6b485a24379677d67b",
+    "FactAdditionalInternationalProductDescription.csv": "ce1e7e4eeb516b1ff2a8ec1655d2782c59e91118580b69a5e135d2357e0ddae6",
+    "FactCallCenter.csv": "485f6b5ad4188f345e1c7b1ee2b05d6abc89b0175cf0cf603a59a74d1fc0b6a5",
+    "FactCurrencyRate.csv": "c39e94077ff2af8d7005f34a614e1cd8be78732163b6d0c3de9c584c4c32c9c8",
+    "FactFinance.csv": "7103fb506d14465e545296a23dd218aef980990229d3c132b560977061e3ab45",
+    "FactInternetSales.csv": "4f827d699f5caae7909fc81395730c41d700c95e3ef0711152e3d18cc1978e1e",
+    "FactInternetSalesReason.csv": "311a81a710abb8f3589cb5bdf190113893630f3b2166e3d77cb201a81f067005",
+    "FactProductInventory.csv": "51516eb4e60b7cb68edced3ab95a5a1957b8d1fef33f4d60bb1baf36cb1dea58",
+    "FactResellerSales.csv": "35c6e6d5bd01d6c87f7795c4120efe215d2dd565836a51631680566316ea829a",
+    "FactSalesQuota.csv": "ba7dbea4b18a086d1fadca549a978173edb328d2f025edec567e4d0a3dc690ca",
+    "FactSurveyResponse.csv": "f2cdc1521d8ef3504d440647b510c7ee64370a282d3769b29d27da06f885075d",
+    "instawdbdw.sql": "90d287554c9c230664f26149eb4d5d7e53dadc1db2dd2caa29c91a129ba31ec1",
+    "license.txt": "b2de5453add2e6789c152b78e5eff7886cdae8a47cb4b118f24a775dd13df5ed",
+    "NewFactCurrencyRate.csv": "d943603ce81ccae990690f7b72968d3e8ccd64221ebd6f80184e7a9e38b6589c",
+    "ProspectiveBuyer.csv": "11ed2cfaa9689883a0a5f57cd91eb409c5c57eb891458f8540540a91ef3f55c3"
+  },
+  "raw_unchanged": true,
+  "sql_unchanged": true
+}

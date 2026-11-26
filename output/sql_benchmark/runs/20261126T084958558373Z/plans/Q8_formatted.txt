@@ -1,0 +1,82 @@
+== Physical Plan ==
+AdaptiveSparkPlan (13)
++- TakeOrderedAndProject (12)
+   +- HashAggregate (11)
+      +- Exchange (10)
+         +- HashAggregate (9)
+            +- HashAggregate (8)
+               +- Exchange (7)
+                  +- HashAggregate (6)
+                     +- Project (5)
+                        +- BroadcastHashJoin Inner BuildRight (4)
+                           :- LocalTableScan (1)
+                           +- BroadcastExchange (3)
+                              +- LocalTableScan (2)
+
+
+(1) LocalTableScan
+Output [3]: [order_id#19, CustomerKey#23L, revenue_units#24L]
+Arguments: [order_id#19, CustomerKey#23L, revenue_units#24L]
+
+(2) LocalTableScan
+Output [1]: [CustomerKey#17L]
+Arguments: [CustomerKey#17L]
+
+(3) BroadcastExchange
+Input [1]: [CustomerKey#17L]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=12518]
+
+(4) BroadcastHashJoin
+Left keys [1]: [CustomerKey#23L]
+Right keys [1]: [CustomerKey#17L]
+Join type: Inner
+Join condition: None
+
+(5) Project
+Output [3]: [order_id#19, CustomerKey#23L, revenue_units#24L]
+Input [4]: [order_id#19, CustomerKey#23L, revenue_units#24L, CustomerKey#17L]
+
+(6) HashAggregate
+Input [3]: [order_id#19, CustomerKey#23L, revenue_units#24L]
+Keys [2]: [CustomerKey#23L, order_id#19]
+Functions [1]: [partial_sum(revenue_units#24L)]
+Aggregate Attributes [1]: [sum(revenue_units#24L)#2453L]
+Results [3]: [CustomerKey#23L, order_id#19, sum#2456L]
+
+(7) Exchange
+Input [3]: [CustomerKey#23L, order_id#19, sum#2456L]
+Arguments: hashpartitioning(CustomerKey#23L, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=12523]
+
+(8) HashAggregate
+Input [3]: [CustomerKey#23L, order_id#19, sum#2456L]
+Keys [2]: [CustomerKey#23L, order_id#19]
+Functions [1]: [merge_sum(revenue_units#24L)]
+Aggregate Attributes [1]: [sum(revenue_units#24L)#2453L]
+Results [3]: [CustomerKey#23L, order_id#19, sum#2456L]
+
+(9) HashAggregate
+Input [3]: [CustomerKey#23L, order_id#19, sum#2456L]
+Keys [1]: [CustomerKey#23L]
+Functions [2]: [merge_sum(revenue_units#24L), partial_count(distinct order_id#19)]
+Aggregate Attributes [2]: [sum(revenue_units#24L)#2453L, count(order_id#19)#2454L]
+Results [3]: [CustomerKey#23L, sum#2456L, count#2459L]
+
+(10) Exchange
+Input [3]: [CustomerKey#23L, sum#2456L, count#2459L]
+Arguments: hashpartitioning(CustomerKey#23L, 4), ENSURE_REQUIREMENTS, [plan_id=12527]
+
+(11) HashAggregate
+Input [3]: [CustomerKey#23L, sum#2456L, count#2459L]
+Keys [1]: [CustomerKey#23L]
+Functions [2]: [sum(revenue_units#24L), count(distinct order_id#19)]
+Aggregate Attributes [2]: [sum(revenue_units#24L)#2453L, count(order_id#19)#2454L]
+Results [3]: [CustomerKey#23L, sum(revenue_units#24L)#2453L AS revenue_units#2451L, count(order_id#19)#2454L AS orders#2452L]
+
+(12) TakeOrderedAndProject
+Input [3]: [CustomerKey#23L, revenue_units#2451L, orders#2452L]
+Arguments: 10, [revenue_units#2451L DESC NULLS LAST, CustomerKey#23L ASC NULLS FIRST], [CustomerKey#23L, revenue_units#2451L, orders#2452L]
+
+(13) AdaptiveSparkPlan
+Output [3]: [CustomerKey#23L, revenue_units#2451L, orders#2452L]
+Arguments: isFinalPlan=false
+

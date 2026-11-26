@@ -23,7 +23,7 @@ def compact_money(value):
 
 
 def filter_sales(frame, start, end, channel=ALL, region=ALL, category=ALL, product=ALL, store=ALL):
-    mask = frame.order_date.ge(pd.Timestamp(start)) & frame.order_date.lt(pd.Timestamp(end) + pd.Timedelta(days=1))
+    mask = frame.order_date.ge(pd.Timestamp(start)) & frame.order_date.lt(pd.Timestamp(end) + pd.Timedelta(1, unit='D'))
     for column, value in [('channel', channel), ('region', region), ('category', category), ('product', product), ('store', store)]:
         if value != ALL:
             mask &= frame[column].eq(value)

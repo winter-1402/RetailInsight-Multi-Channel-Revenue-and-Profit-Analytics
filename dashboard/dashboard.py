@@ -189,7 +189,8 @@ with overview:
         trend.update_layout(title='Xu hướng doanh thu và lợi nhuận', yaxis_title='Triệu USD',
             xaxis=dict(title=None, tickformat='%m/%Y', dtick='M6'))
         for row in monthly.loc[~monthly.complete].itertuples():
-            trend.add_vrect(x0=row.month_start, x1=row.month_end + pd.Timedelta(days=1), fillcolor=AMBER, opacity=.08, line_width=0)
+            trend.add_vrect(x0=row.month_start, x1=row.month_end + pd.Timedelta(1, unit='D'),
+                fillcolor=AMBER, opacity=.08, line_width=0)
         finish_chart(trend, 355)
     with right:
         donut = px.pie(by_channel, values='revenue_usd', names='channel', hole=.72,
@@ -287,9 +288,11 @@ with evidence_tab:
             environment = json.loads((run / 'benchmark_environment.json').read_text(encoding='utf-8'))
             if environment.get('status', 'passed') != 'passed':
                 st.error('Benchmark chưa hoàn tất hoặc không khớp. Bảng dưới chỉ là kết quả chẩn đoán từng lượt đã chạy.')
-            benchmark['workload'] = benchmark['query'].map({'monthly': 'Tháng và kênh', 'region': 'Vùng và kênh', 'category': 'Danh mục và kênh'})
+            benchmark['workload'] = benchmark['query'].replace({'monthly': 'Tháng và kênh',
+                'region': 'Vùng và kênh', 'category': 'Danh mục và kênh', 'customer_segments': 'Phân khúc người mua'})
             fig = px.bar(benchmark, x='workload', y='median_seconds', color='engine', barmode='group',
-                color_discrete_map={'pandas': TEAL, 'spark_sql': NAVY}, title='Thời gian truy vấn trung vị · dữ liệu gốc',
+                color_discrete_map={'pandas': TEAL, 'duckdb': '#99692c', 'spark_sql': NAVY},
+                title='Thời gian truy vấn trung vị · dữ liệu gốc',
                 labels={'workload': '', 'median_seconds': 'Giây', 'engine': 'Công cụ'})
             finish_chart(fig, 340)
             st.dataframe(benchmark[['workload', 'engine', 'median_seconds', 'exact_match']].rename(columns={

@@ -1,23 +1,5 @@
-.........................................................                [100%]
-============================== warnings summary ===============================
-tests/test_analytics.py::test_filter_intersection_and_end_day_are_applied_to_every_metric
-tests/test_analytics.py::test_csv_export_uses_filtered_usd_totals_and_public_column_names
-tests/test_analytics.py::test_store_filter_selects_the_named_reseller_without_changing_totals
-  E:\hc\BIG DATA Analyst and BA\BTL\RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics\src\pipeline\analytics.py:26: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
-    mask = frame.order_date.ge(pd.Timestamp(start)) & frame.order_date.lt(pd.Timestamp(end) + pd.Timedelta(days=1))
-
-tests/test_dashboard.py: 64 warnings
-  E:\hc\BIG DATA Analyst and BA\BTL\RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics\src\pipeline\analytics.py:26: DeprecationWarning:
-
-  The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
-
-tests/test_dashboard.py: 108 warnings
-  E:\hc\BIG DATA Analyst and BA\BTL\RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics\dashboard\dashboard.py:192: DeprecationWarning:
-
-  The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-57 passed, 175 warnings in 110.51s (0:01:50)
-SUCCESS: The process with PID 75508 (child process of PID 59328) has been terminated.
-SUCCESS: The process with PID 59328 (child process of PID 91868) has been terminated.
-SUCCESS: The process with PID 91868 (child process of PID 47496) has been terminated.
+..........................................................               [100%]
+58 passed in 106.31s (0:01:46)
+SUCCESS: The process with PID 16300 (child process of PID 19896) has been terminated.
+SUCCESS: The process with PID 19896 (child process of PID 44560) has been terminated.
+SUCCESS: The process with PID 44560 (child process of PID 38624) has been terminated.

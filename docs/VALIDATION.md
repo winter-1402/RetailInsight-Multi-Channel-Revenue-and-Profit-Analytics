@@ -12,6 +12,8 @@
 
 `python -m pytest -q` chạy toàn bộ test. `python -m src.utils.delivery --verify` lưu stdout/stderr thực và mã thoát vào `output/evidence/tests.log` và `test_status.json`.
 
+Ngày 26/11/2026 trên Windows, bản `finish/retailinsight` cài sạch với Python 3.12.8 và Temurin 17. `pip check` báo không có xung đột. Kết quả gồm **58/58 test đạt**, **72/72 lượt mart 1×/5× khớp chính xác** và **80/80 lượt Q1–Q8 khớp chính xác**. `run.cmd dashboard` trả HTTP 200 ở điểm kiểm tra dịch vụ và AppTest đọc đủ 12 hàng so sánh. Xem [minh chứng lượt chạy](../output/evidence/README.md).
+
 Ngày 17/11/2026, sau khi gom mã/SQL vào `src/benchmark/` và test vào `tests/benchmark/`: **57/57 test đạt**, mã thoát 0. Bao gồm thực thi Spark, dashboard AppTest, đóng gói ZIP và chạy `--help` các module từ gói đã giải nén.
 
 | File | Phạm vi |
@@ -30,10 +32,10 @@ AppTest thực thi ứng dụng và các biểu đồ/bảng nhưng không thay 
 
 [Kế hoạch chi tiết và kết quả baseline mới](SPARK_SQL_TEST_PLAN.md) ghi cấu hình CPU/RAM, hash dữ liệu/SQL, cách đo và kế hoạch Q1–Q8 phù hợp AdventureWorks. CSV gốc không bị thay đổi.
 
-Cùng Parquet, cột và phép tổng hợp; mốc đo gồm đọc, groupby/distinct, sort và collect. Ba lần cho mỗi engine/truy vấn, thứ tự luân phiên. Lần pandas đầu được đo và làm tham chiếu; không có lượt warm-up pandas bị giấu. Khởi động JVM ghi riêng, cache OS không xóa và không loại lần đầu. Kiểm tra từng nhóm với `assert_frame_equal`, không chỉ kiểm tra tổng tiền.
+Cùng Parquet, cột và phép tính cho pandas, DuckDB và Spark SQL. Mốc đo gồm đọc, tổng hợp, sắp xếp và nhận kết quả. Ba lượt cho mỗi công cụ và truy vấn, luân phiên thứ tự. Lượt pandas đầu làm tham chiếu và được giữ trong kết quả. Khởi động JVM ghi riêng, giữ cache OS. `assert_frame_equal` kiểm tra khóa và từng giá trị theo nhóm. Các truy vấn SQL ghi `NULLS LAST` để cùng thứ tự với pandas.
 
 Tải 5× là bản sao 606.265 dòng, mã đơn/người mua có hậu tố từng bản sao. Không trộn dữ liệu này với dashboard kinh doanh. Chưa kiểm tra cụm phân tán, giới hạn bộ nhớ cực đại hoặc ngưỡng Spark vượt pandas.
 
 ## Bổ sung trong nhánh rà soát
 
-Kiểm tra DimReseller nhiều-một, mã cửa hàng thiếu đúng nghĩa ở Internet, bộ lọc đại lý và reset. Mẫu bán hàng giữ 10 dòng mỗi kênh; mỗi run có pipeline.log thực thi. Pytest dùng `.pytest-tmp` để không phụ thuộc thư mục cache đã có trên máy.
+Kiểm tra DimReseller nhiều-một, mã cửa hàng thiếu đúng nghĩa ở Internet, bộ lọc đại lý và reset. Mẫu bán hàng giữ 10 dòng mỗi kênh và mỗi lượt nạp có `pipeline.log`. Pytest dùng thư mục tạm riêng theo cơ chế mặc định để tránh va chạm với `.pytest-tmp` tồn tại từ lượt cũ. Cache kiểm thử nằm trong `.cache/pytest-cache`.

@@ -1,6 +1,6 @@
 # Kịch bản demo 6–8 phút
 
-Chuẩn bị bằng `run.cmd all`, sau đó `run.cmd dashboard`. Muốn có thử tải 5×: chạy `run.cmd load-test`, rồi `run.cmd report` và `run.cmd package`.
+Chuẩn bị bằng `run.cmd technical`, sau đó `run.cmd dashboard`. Nếu chỉ cần mở dashboard và chưa có mart, chạy `run.cmd pipeline` trước.
 
 1. **Bài toán và nguồn — 1 phút.** Nêu hai câu hỏi kinh doanh trong README, người dùng quản lý bán hàng/tài chính. Giới thiệu dữ liệu mẫu Microsoft, hai kênh, giá vốn và chiết khấu; không gọi là dữ liệu doanh nghiệp thực.
 2. **Pipeline — 1 phút.** Mở sơ đồ README và quality/manifest. Giải thích CSV `|`, schema ghim phiên bản, số nguyên tiền 1/10.000 USD, khóa có kênh, cách ly lỗi và công bố run sau khi kiểm tra xong.

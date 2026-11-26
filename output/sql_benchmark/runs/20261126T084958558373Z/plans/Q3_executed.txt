@@ -1,0 +1,59 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 6
+   +- *(4) Sort [channel#20 ASC NULLS FIRST, ProductCategoryKey#6L ASC NULLS LAST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 5
+            +- Exchange rangepartitioning(channel#20 ASC NULLS FIRST, ProductCategoryKey#6L ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=11211]
+               +- *(3) HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7], functions=[sum(revenue_units#24L), sum(cost_units#25L), sum(profit_units#26L), count(distinct order_id#19)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, revenue_units#2104L, cost_units#2105L, profit_units#2106L, orders#2107L])
+                  +- AQEShuffleRead coalesced
+                     +- ShuffleQueryStage 4
+                        +- Exchange hashpartitioning(channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, 4), ENSURE_REQUIREMENTS, [plan_id=11181]
+                           +- *(2) HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L), partial_count(distinct order_id#19)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, sum#2113L, sum#2115L, sum#2117L, count#2120L])
+                              +- *(2) HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L])
+                                 +- AQEShuffleRead coalesced
+                                    +- ShuffleQueryStage 3
+                                       +- Exchange hashpartitioning(channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=11128]
+                                          +- *(1) HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19], functions=[partial_sum(revenue_units#24L), partial_sum(cost_units#25L), partial_sum(profit_units#26L)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L])
+                                             +- *(1) Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+                                                +- *(1) BroadcastHashJoin [ProductCategoryKey#5L], [ProductCategoryKey#6L], LeftOuter, BuildRight, false
+                                                   :- *(1) Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#5L]
+                                                   :  +- *(1) BroadcastHashJoin [ProductSubcategoryKey#1L], [ProductSubcategoryKey#4L], LeftOuter, BuildRight, false
+                                                   :     :- *(1) Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductSubcategoryKey#1L]
+                                                   :     :  +- *(1) BroadcastHashJoin [ProductKey#21L], [ProductKey#0L], Inner, BuildRight, false
+                                                   :     :     :- Union
+                                                   :     :     :  :- LocalTableScan [ProductKey#21L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+                                                   :     :     :  +- LocalTableScan [ProductKey#30L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+                                                   :     :     +- BroadcastQueryStage 0
+                                                   :     :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10869]
+                                                   :     :           +- LocalTableScan [ProductKey#0L, ProductSubcategoryKey#1L]
+                                                   :     +- BroadcastQueryStage 1
+                                                   :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10873]
+                                                   :           +- LocalTableScan [ProductSubcategoryKey#4L, ProductCategoryKey#5L]
+                                                   +- BroadcastQueryStage 2
+                                                      +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10877]
+                                                         +- LocalTableScan [ProductCategoryKey#6L, EnglishProductCategoryName#7]
++- == Initial Plan ==
+   Sort [channel#20 ASC NULLS FIRST, ProductCategoryKey#6L ASC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(channel#20 ASC NULLS FIRST, ProductCategoryKey#6L ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=10889]
+      +- HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7], functions=[sum(revenue_units#24L), sum(cost_units#25L), sum(profit_units#26L), count(distinct order_id#19)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, revenue_units#2104L, cost_units#2105L, profit_units#2106L, orders#2107L])
+         +- Exchange hashpartitioning(channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, 4), ENSURE_REQUIREMENTS, [plan_id=10886]
+            +- HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L), partial_count(distinct order_id#19)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, sum#2113L, sum#2115L, sum#2117L, count#2120L])
+               +- HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L])
+                  +- Exchange hashpartitioning(channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=10882]
+                     +- HashAggregate(keys=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19], functions=[partial_sum(revenue_units#24L), partial_sum(cost_units#25L), partial_sum(profit_units#26L)], output=[channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L])
+                        +- Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+                           +- BroadcastHashJoin [ProductCategoryKey#5L], [ProductCategoryKey#6L], LeftOuter, BuildRight, false
+                              :- Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#5L]
+                              :  +- BroadcastHashJoin [ProductSubcategoryKey#1L], [ProductSubcategoryKey#4L], LeftOuter, BuildRight, false
+                              :     :- Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductSubcategoryKey#1L]
+                              :     :  +- BroadcastHashJoin [ProductKey#21L], [ProductKey#0L], Inner, BuildRight, false
+                              :     :     :- Union
+                              :     :     :  :- LocalTableScan [ProductKey#21L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+                              :     :     :  +- LocalTableScan [ProductKey#30L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+                              :     :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10869]
+                              :     :        +- LocalTableScan [ProductKey#0L, ProductSubcategoryKey#1L]
+                              :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10873]
+                              :        +- LocalTableScan [ProductSubcategoryKey#4L, ProductCategoryKey#5L]
+                              +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10877]
+                                 +- LocalTableScan [ProductCategoryKey#6L, EnglishProductCategoryName#7]

@@ -1,0 +1,947 @@
+
+monthly | DuckDB
+┌───────────────────────────┐
+│          ORDER_BY         │
+│    ────────────────────   │
+│     memory.main.sales     │
+│    .purchase_month ASC    │
+│ memory.main.sales.channel │
+│             ASC           │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       HASH_GROUP_BY       │
+│    ────────────────────   │
+│          Groups:          │
+│             #0            │
+│             #1            │
+│                           │
+│        Aggregates:        │
+│          sum(#2)          │
+│          sum(#3)          │
+│          sum(#4)          │
+│     count(DISTINCT #5)    │
+│                           │
+│       ~606,264 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│       purchase_month      │
+│          channel          │
+│       revenue_units       │
+│         cost_units        │
+│        profit_units       │
+│          order_id         │
+│                           │
+│       ~606,265 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       PARQUET_SCAN        │
+│    ────────────────────   │
+│         Function:         │
+│        PARQUET_SCAN       │
+│                           │
+│        Projections:       │
+│          order_id         │
+│       purchase_month      │
+│          channel          │
+│       revenue_units       │
+│         cost_units        │
+│        profit_units       │
+│                           │
+│       ~606,265 rows       │
+└───────────────────────────┘
+
+
+monthly | Spark SQL
+== Physical Plan ==
+AdaptiveSparkPlan (26)
++- == Final Plan ==
+   ResultQueryStage (17)
+   +- * Sort (16)
+      +- AQEShuffleRead (15)
+         +- ShuffleQueryStage (14), Statistics(sizeInBytes=5.0 KiB, rowCount=71)
+            +- Exchange (13)
+               +- * HashAggregate (12)
+                  +- AQEShuffleRead (11)
+                     +- ShuffleQueryStage (10), Statistics(sizeInBytes=10.0 KiB, rowCount=142)
+                        +- Exchange (9)
+                           +- * HashAggregate (8)
+                              +- * HashAggregate (7)
+                                 +- AQEShuffleRead (6)
+                                    +- ShuffleQueryStage (5), Statistics(sizeInBytes=15.6 MiB, rowCount=1.57E+5)
+                                       +- Exchange (4)
+                                          +- * HashAggregate (3)
+                                             +- * ColumnarToRow (2)
+                                                +- Scan parquet  (1)
++- == Initial Plan ==
+   Sort (25)
+   +- Exchange (24)
+      +- HashAggregate (23)
+         +- Exchange (22)
+            +- HashAggregate (21)
+               +- HashAggregate (20)
+                  +- Exchange (19)
+                     +- HashAggregate (18)
+                        +- Scan parquet  (1)
+
+
+(1) Scan parquet 
+Output [6]: [order_id#139, purchase_month#141, channel#142, revenue_units#154L, cost_units#155L, profit_units#156L]
+Batched: true
+Location: InMemoryFileIndex [file:/D:/BK/HK26/BigDataAnalyticsAndBI/BTL/RetailInsight/data/adventureworks/warehouse/runs/20261126T084820790311Z/load_scale_5/synthetic_fact.parquet]
+ReadSchema: struct<order_id:string,purchase_month:string,channel:string,revenue_units:bigint,cost_units:bigint,profit_units:bigint>
+
+(2) ColumnarToRow [codegen id : 1]
+Input [6]: [order_id#139, purchase_month#141, channel#142, revenue_units#154L, cost_units#155L, profit_units#156L]
+
+(3) HashAggregate [codegen id : 1]
+Input [6]: [order_id#139, purchase_month#141, channel#142, revenue_units#154L, cost_units#155L, profit_units#156L]
+Keys [3]: [purchase_month#141, channel#142, order_id#139]
+Functions [3]: [partial_sum(revenue_units#154L), partial_sum(cost_units#155L), partial_sum(profit_units#156L)]
+Aggregate Attributes [3]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L]
+Results [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+
+(4) Exchange
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Arguments: hashpartitioning(purchase_month#141, channel#142, order_id#139, 4), ENSURE_REQUIREMENTS, [plan_id=343]
+
+(5) ShuffleQueryStage
+Output [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Arguments: 0
+
+(6) AQEShuffleRead
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Arguments: coalesced
+
+(7) HashAggregate [codegen id : 2]
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Keys [3]: [purchase_month#141, channel#142, order_id#139]
+Functions [3]: [merge_sum(revenue_units#154L), merge_sum(cost_units#155L), merge_sum(profit_units#156L)]
+Aggregate Attributes [3]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L]
+Results [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+
+(8) HashAggregate [codegen id : 2]
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Keys [2]: [purchase_month#141, channel#142]
+Functions [4]: [merge_sum(revenue_units#154L), merge_sum(cost_units#155L), merge_sum(profit_units#156L), partial_count(distinct order_id#139)]
+Aggregate Attributes [4]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L, count(order_id#139)#167L]
+Results [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+
+(9) Exchange
+Input [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+Arguments: hashpartitioning(purchase_month#141, channel#142, 4), ENSURE_REQUIREMENTS, [plan_id=382]
+
+(10) ShuffleQueryStage
+Output [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+Arguments: 1
+
+(11) AQEShuffleRead
+Input [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+Arguments: coalesced
+
+(12) HashAggregate [codegen id : 3]
+Input [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+Keys [2]: [purchase_month#141, channel#142]
+Functions [4]: [sum(revenue_units#154L), sum(cost_units#155L), sum(profit_units#156L), count(distinct order_id#139)]
+Aggregate Attributes [4]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L, count(order_id#139)#167L]
+Results [6]: [purchase_month#141, channel#142, sum(revenue_units#154L)#164L AS revenue_units#160L, sum(cost_units#155L)#165L AS cost_units#161L, sum(profit_units#156L)#166L AS profit_units#162L, count(order_id#139)#167L AS orders#163L]
+
+(13) Exchange
+Input [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: rangepartitioning(purchase_month#141 ASC NULLS LAST, channel#142 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=412]
+
+(14) ShuffleQueryStage
+Output [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: 2
+
+(15) AQEShuffleRead
+Input [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: coalesced
+
+(16) Sort [codegen id : 4]
+Input [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: [purchase_month#141 ASC NULLS LAST, channel#142 ASC NULLS LAST], true, 0
+
+(17) ResultQueryStage
+Output [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: 3
+
+(18) HashAggregate
+Input [6]: [order_id#139, purchase_month#141, channel#142, revenue_units#154L, cost_units#155L, profit_units#156L]
+Keys [3]: [purchase_month#141, channel#142, order_id#139]
+Functions [3]: [partial_sum(revenue_units#154L), partial_sum(cost_units#155L), partial_sum(profit_units#156L)]
+Aggregate Attributes [3]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L]
+Results [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+
+(19) Exchange
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Arguments: hashpartitioning(purchase_month#141, channel#142, order_id#139, 4), ENSURE_REQUIREMENTS, [plan_id=312]
+
+(20) HashAggregate
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Keys [3]: [purchase_month#141, channel#142, order_id#139]
+Functions [3]: [merge_sum(revenue_units#154L), merge_sum(cost_units#155L), merge_sum(profit_units#156L)]
+Aggregate Attributes [3]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L]
+Results [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+
+(21) HashAggregate
+Input [6]: [purchase_month#141, channel#142, order_id#139, sum#169L, sum#171L, sum#173L]
+Keys [2]: [purchase_month#141, channel#142]
+Functions [4]: [merge_sum(revenue_units#154L), merge_sum(cost_units#155L), merge_sum(profit_units#156L), partial_count(distinct order_id#139)]
+Aggregate Attributes [4]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L, count(order_id#139)#167L]
+Results [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+
+(22) Exchange
+Input [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+Arguments: hashpartitioning(purchase_month#141, channel#142, 4), ENSURE_REQUIREMENTS, [plan_id=316]
+
+(23) HashAggregate
+Input [6]: [purchase_month#141, channel#142, sum#169L, sum#171L, sum#173L, count#176L]
+Keys [2]: [purchase_month#141, channel#142]
+Functions [4]: [sum(revenue_units#154L), sum(cost_units#155L), sum(profit_units#156L), count(distinct order_id#139)]
+Aggregate Attributes [4]: [sum(revenue_units#154L)#164L, sum(cost_units#155L)#165L, sum(profit_units#156L)#166L, count(order_id#139)#167L]
+Results [6]: [purchase_month#141, channel#142, sum(revenue_units#154L)#164L AS revenue_units#160L, sum(cost_units#155L)#165L AS cost_units#161L, sum(profit_units#156L)#166L AS profit_units#162L, count(order_id#139)#167L AS orders#163L]
+
+(24) Exchange
+Input [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: rangepartitioning(purchase_month#141 ASC NULLS LAST, channel#142 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=319]
+
+(25) Sort
+Input [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: [purchase_month#141 ASC NULLS LAST, channel#142 ASC NULLS LAST], true, 0
+
+(26) AdaptiveSparkPlan
+Output [6]: [purchase_month#141, channel#142, revenue_units#160L, cost_units#161L, profit_units#162L, orders#163L]
+Arguments: isFinalPlan=true
+
+
+
+region | DuckDB
+┌───────────────────────────┐
+│          ORDER_BY         │
+│    ────────────────────   │
+│  memory.main.sales.region │
+│             ASC           │
+│ memory.main.sales.channel │
+│             ASC           │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       HASH_GROUP_BY       │
+│    ────────────────────   │
+│          Groups:          │
+│             #0            │
+│             #1            │
+│                           │
+│        Aggregates:        │
+│          sum(#2)          │
+│          sum(#3)          │
+│          sum(#4)          │
+│     count(DISTINCT #5)    │
+│                           │
+│       ~606,264 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│           region          │
+│          channel          │
+│       revenue_units       │
+│         cost_units        │
+│        profit_units       │
+│          order_id         │
+│                           │
+│       ~606,265 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       PARQUET_SCAN        │
+│    ────────────────────   │
+│         Function:         │
+│        PARQUET_SCAN       │
+│                           │
+│        Projections:       │
+│          order_id         │
+│          channel          │
+│           region          │
+│       revenue_units       │
+│         cost_units        │
+│        profit_units       │
+│                           │
+│       ~606,265 rows       │
+└───────────────────────────┘
+
+
+region | Spark SQL
+== Physical Plan ==
+AdaptiveSparkPlan (26)
++- == Final Plan ==
+   ResultQueryStage (17)
+   +- * Sort (16)
+      +- AQEShuffleRead (15)
+         +- ShuffleQueryStage (14), Statistics(sizeInBytes=1536.0 B, rowCount=20)
+            +- Exchange (13)
+               +- * HashAggregate (12)
+                  +- AQEShuffleRead (11)
+                     +- ShuffleQueryStage (10), Statistics(sizeInBytes=3.0 KiB, rowCount=40)
+                        +- Exchange (9)
+                           +- * HashAggregate (8)
+                              +- * HashAggregate (7)
+                                 +- AQEShuffleRead (6)
+                                    +- ShuffleQueryStage (5), Statistics(sizeInBytes=16.4 MiB, rowCount=1.57E+5)
+                                       +- Exchange (4)
+                                          +- * HashAggregate (3)
+                                             +- * ColumnarToRow (2)
+                                                +- Scan parquet  (1)
++- == Initial Plan ==
+   Sort (25)
+   +- Exchange (24)
+      +- HashAggregate (23)
+         +- Exchange (22)
+            +- HashAggregate (21)
+               +- HashAggregate (20)
+                  +- Exchange (19)
+                     +- HashAggregate (18)
+                        +- Scan parquet  (1)
+
+
+(1) Scan parquet 
+Output [6]: [order_id#346, channel#349, region#355, revenue_units#361L, cost_units#362L, profit_units#363L]
+Batched: true
+Location: InMemoryFileIndex [file:/D:/BK/HK26/BigDataAnalyticsAndBI/BTL/RetailInsight/data/adventureworks/warehouse/runs/20261126T084820790311Z/load_scale_5/synthetic_fact.parquet]
+ReadSchema: struct<order_id:string,channel:string,region:string,revenue_units:bigint,cost_units:bigint,profit_units:bigint>
+
+(2) ColumnarToRow [codegen id : 1]
+Input [6]: [order_id#346, channel#349, region#355, revenue_units#361L, cost_units#362L, profit_units#363L]
+
+(3) HashAggregate [codegen id : 1]
+Input [6]: [order_id#346, channel#349, region#355, revenue_units#361L, cost_units#362L, profit_units#363L]
+Keys [3]: [region#355, channel#349, order_id#346]
+Functions [3]: [partial_sum(revenue_units#361L), partial_sum(cost_units#362L), partial_sum(profit_units#363L)]
+Aggregate Attributes [3]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L]
+Results [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+
+(4) Exchange
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Arguments: hashpartitioning(region#355, channel#349, order_id#346, 4), ENSURE_REQUIREMENTS, [plan_id=775]
+
+(5) ShuffleQueryStage
+Output [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Arguments: 0
+
+(6) AQEShuffleRead
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Arguments: coalesced
+
+(7) HashAggregate [codegen id : 2]
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Keys [3]: [region#355, channel#349, order_id#346]
+Functions [3]: [merge_sum(revenue_units#361L), merge_sum(cost_units#362L), merge_sum(profit_units#363L)]
+Aggregate Attributes [3]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L]
+Results [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+
+(8) HashAggregate [codegen id : 2]
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Keys [2]: [region#355, channel#349]
+Functions [4]: [merge_sum(revenue_units#361L), merge_sum(cost_units#362L), merge_sum(profit_units#363L), partial_count(distinct order_id#346)]
+Aggregate Attributes [4]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L, count(order_id#346)#374L]
+Results [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+
+(9) Exchange
+Input [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+Arguments: hashpartitioning(region#355, channel#349, 4), ENSURE_REQUIREMENTS, [plan_id=814]
+
+(10) ShuffleQueryStage
+Output [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+Arguments: 1
+
+(11) AQEShuffleRead
+Input [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+Arguments: coalesced
+
+(12) HashAggregate [codegen id : 3]
+Input [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+Keys [2]: [region#355, channel#349]
+Functions [4]: [sum(revenue_units#361L), sum(cost_units#362L), sum(profit_units#363L), count(distinct order_id#346)]
+Aggregate Attributes [4]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L, count(order_id#346)#374L]
+Results [6]: [region#355, channel#349, sum(revenue_units#361L)#371L AS revenue_units#367L, sum(cost_units#362L)#372L AS cost_units#368L, sum(profit_units#363L)#373L AS profit_units#369L, count(order_id#346)#374L AS orders#370L]
+
+(13) Exchange
+Input [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: rangepartitioning(region#355 ASC NULLS LAST, channel#349 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=844]
+
+(14) ShuffleQueryStage
+Output [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: 2
+
+(15) AQEShuffleRead
+Input [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: coalesced
+
+(16) Sort [codegen id : 4]
+Input [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: [region#355 ASC NULLS LAST, channel#349 ASC NULLS LAST], true, 0
+
+(17) ResultQueryStage
+Output [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: 3
+
+(18) HashAggregate
+Input [6]: [order_id#346, channel#349, region#355, revenue_units#361L, cost_units#362L, profit_units#363L]
+Keys [3]: [region#355, channel#349, order_id#346]
+Functions [3]: [partial_sum(revenue_units#361L), partial_sum(cost_units#362L), partial_sum(profit_units#363L)]
+Aggregate Attributes [3]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L]
+Results [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+
+(19) Exchange
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Arguments: hashpartitioning(region#355, channel#349, order_id#346, 4), ENSURE_REQUIREMENTS, [plan_id=744]
+
+(20) HashAggregate
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Keys [3]: [region#355, channel#349, order_id#346]
+Functions [3]: [merge_sum(revenue_units#361L), merge_sum(cost_units#362L), merge_sum(profit_units#363L)]
+Aggregate Attributes [3]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L]
+Results [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+
+(21) HashAggregate
+Input [6]: [region#355, channel#349, order_id#346, sum#376L, sum#378L, sum#380L]
+Keys [2]: [region#355, channel#349]
+Functions [4]: [merge_sum(revenue_units#361L), merge_sum(cost_units#362L), merge_sum(profit_units#363L), partial_count(distinct order_id#346)]
+Aggregate Attributes [4]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L, count(order_id#346)#374L]
+Results [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+
+(22) Exchange
+Input [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+Arguments: hashpartitioning(region#355, channel#349, 4), ENSURE_REQUIREMENTS, [plan_id=748]
+
+(23) HashAggregate
+Input [6]: [region#355, channel#349, sum#376L, sum#378L, sum#380L, count#383L]
+Keys [2]: [region#355, channel#349]
+Functions [4]: [sum(revenue_units#361L), sum(cost_units#362L), sum(profit_units#363L), count(distinct order_id#346)]
+Aggregate Attributes [4]: [sum(revenue_units#361L)#371L, sum(cost_units#362L)#372L, sum(profit_units#363L)#373L, count(order_id#346)#374L]
+Results [6]: [region#355, channel#349, sum(revenue_units#361L)#371L AS revenue_units#367L, sum(cost_units#362L)#372L AS cost_units#368L, sum(profit_units#363L)#373L AS profit_units#369L, count(order_id#346)#374L AS orders#370L]
+
+(24) Exchange
+Input [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: rangepartitioning(region#355 ASC NULLS LAST, channel#349 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=751]
+
+(25) Sort
+Input [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: [region#355 ASC NULLS LAST, channel#349 ASC NULLS LAST], true, 0
+
+(26) AdaptiveSparkPlan
+Output [6]: [region#355, channel#349, revenue_units#367L, cost_units#368L, profit_units#369L, orders#370L]
+Arguments: isFinalPlan=true
+
+
+
+category | DuckDB
+┌───────────────────────────┐
+│          ORDER_BY         │
+│    ────────────────────   │
+│ memory.main.sales.category│
+│             ASC           │
+│ memory.main.sales.channel │
+│             ASC           │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       HASH_GROUP_BY       │
+│    ────────────────────   │
+│          Groups:          │
+│             #0            │
+│             #1            │
+│                           │
+│        Aggregates:        │
+│          sum(#2)          │
+│          sum(#3)          │
+│          sum(#4)          │
+│     count(DISTINCT #5)    │
+│                           │
+│       ~606,264 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│          category         │
+│          channel          │
+│       revenue_units       │
+│         cost_units        │
+│        profit_units       │
+│          order_id         │
+│                           │
+│       ~606,265 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       PARQUET_SCAN        │
+│    ────────────────────   │
+│         Function:         │
+│        PARQUET_SCAN       │
+│                           │
+│        Projections:       │
+│          order_id         │
+│          channel          │
+│          category         │
+│       revenue_units       │
+│         cost_units        │
+│        profit_units       │
+│                           │
+│       ~606,265 rows       │
+└───────────────────────────┘
+
+
+category | Spark SQL
+== Physical Plan ==
+AdaptiveSparkPlan (26)
++- == Final Plan ==
+   ResultQueryStage (17)
+   +- * Sort (16)
+      +- AQEShuffleRead (15)
+         +- ShuffleQueryStage (14), Statistics(sizeInBytes=528.0 B, rowCount=7)
+            +- Exchange (13)
+               +- * HashAggregate (12)
+                  +- AQEShuffleRead (11)
+                     +- ShuffleQueryStage (10), Statistics(sizeInBytes=1584.0 B, rowCount=21)
+                        +- Exchange (9)
+                           +- * HashAggregate (8)
+                              +- * HashAggregate (7)
+                                 +- AQEShuffleRead (6)
+                                    +- ShuffleQueryStage (5), Statistics(sizeInBytes=25.8 MiB, rowCount=2.52E+5)
+                                       +- Exchange (4)
+                                          +- * HashAggregate (3)
+                                             +- * ColumnarToRow (2)
+                                                +- Scan parquet  (1)
++- == Initial Plan ==
+   Sort (25)
+   +- Exchange (24)
+      +- HashAggregate (23)
+         +- Exchange (22)
+            +- HashAggregate (21)
+               +- HashAggregate (20)
+                  +- Exchange (19)
+                     +- HashAggregate (18)
+                        +- Scan parquet  (1)
+
+
+(1) Scan parquet 
+Output [6]: [order_id#553, channel#556, category#560, revenue_units#568L, cost_units#569L, profit_units#570L]
+Batched: true
+Location: InMemoryFileIndex [file:/D:/BK/HK26/BigDataAnalyticsAndBI/BTL/RetailInsight/data/adventureworks/warehouse/runs/20261126T084820790311Z/load_scale_5/synthetic_fact.parquet]
+ReadSchema: struct<order_id:string,channel:string,category:string,revenue_units:bigint,cost_units:bigint,profit_units:bigint>
+
+(2) ColumnarToRow [codegen id : 1]
+Input [6]: [order_id#553, channel#556, category#560, revenue_units#568L, cost_units#569L, profit_units#570L]
+
+(3) HashAggregate [codegen id : 1]
+Input [6]: [order_id#553, channel#556, category#560, revenue_units#568L, cost_units#569L, profit_units#570L]
+Keys [3]: [category#560, channel#556, order_id#553]
+Functions [3]: [partial_sum(revenue_units#568L), partial_sum(cost_units#569L), partial_sum(profit_units#570L)]
+Aggregate Attributes [3]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L]
+Results [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+
+(4) Exchange
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Arguments: hashpartitioning(category#560, channel#556, order_id#553, 4), ENSURE_REQUIREMENTS, [plan_id=1207]
+
+(5) ShuffleQueryStage
+Output [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Arguments: 0
+
+(6) AQEShuffleRead
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Arguments: coalesced
+
+(7) HashAggregate [codegen id : 2]
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Keys [3]: [category#560, channel#556, order_id#553]
+Functions [3]: [merge_sum(revenue_units#568L), merge_sum(cost_units#569L), merge_sum(profit_units#570L)]
+Aggregate Attributes [3]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L]
+Results [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+
+(8) HashAggregate [codegen id : 2]
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Keys [2]: [category#560, channel#556]
+Functions [4]: [merge_sum(revenue_units#568L), merge_sum(cost_units#569L), merge_sum(profit_units#570L), partial_count(distinct order_id#553)]
+Aggregate Attributes [4]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L, count(order_id#553)#581L]
+Results [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+
+(9) Exchange
+Input [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+Arguments: hashpartitioning(category#560, channel#556, 4), ENSURE_REQUIREMENTS, [plan_id=1246]
+
+(10) ShuffleQueryStage
+Output [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+Arguments: 1
+
+(11) AQEShuffleRead
+Input [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+Arguments: coalesced
+
+(12) HashAggregate [codegen id : 3]
+Input [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+Keys [2]: [category#560, channel#556]
+Functions [4]: [sum(revenue_units#568L), sum(cost_units#569L), sum(profit_units#570L), count(distinct order_id#553)]
+Aggregate Attributes [4]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L, count(order_id#553)#581L]
+Results [6]: [category#560, channel#556, sum(revenue_units#568L)#578L AS revenue_units#574L, sum(cost_units#569L)#579L AS cost_units#575L, sum(profit_units#570L)#580L AS profit_units#576L, count(order_id#553)#581L AS orders#577L]
+
+(13) Exchange
+Input [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: rangepartitioning(category#560 ASC NULLS LAST, channel#556 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=1276]
+
+(14) ShuffleQueryStage
+Output [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: 2
+
+(15) AQEShuffleRead
+Input [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: coalesced
+
+(16) Sort [codegen id : 4]
+Input [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: [category#560 ASC NULLS LAST, channel#556 ASC NULLS LAST], true, 0
+
+(17) ResultQueryStage
+Output [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: 3
+
+(18) HashAggregate
+Input [6]: [order_id#553, channel#556, category#560, revenue_units#568L, cost_units#569L, profit_units#570L]
+Keys [3]: [category#560, channel#556, order_id#553]
+Functions [3]: [partial_sum(revenue_units#568L), partial_sum(cost_units#569L), partial_sum(profit_units#570L)]
+Aggregate Attributes [3]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L]
+Results [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+
+(19) Exchange
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Arguments: hashpartitioning(category#560, channel#556, order_id#553, 4), ENSURE_REQUIREMENTS, [plan_id=1176]
+
+(20) HashAggregate
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Keys [3]: [category#560, channel#556, order_id#553]
+Functions [3]: [merge_sum(revenue_units#568L), merge_sum(cost_units#569L), merge_sum(profit_units#570L)]
+Aggregate Attributes [3]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L]
+Results [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+
+(21) HashAggregate
+Input [6]: [category#560, channel#556, order_id#553, sum#583L, sum#585L, sum#587L]
+Keys [2]: [category#560, channel#556]
+Functions [4]: [merge_sum(revenue_units#568L), merge_sum(cost_units#569L), merge_sum(profit_units#570L), partial_count(distinct order_id#553)]
+Aggregate Attributes [4]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L, count(order_id#553)#581L]
+Results [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+
+(22) Exchange
+Input [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+Arguments: hashpartitioning(category#560, channel#556, 4), ENSURE_REQUIREMENTS, [plan_id=1180]
+
+(23) HashAggregate
+Input [6]: [category#560, channel#556, sum#583L, sum#585L, sum#587L, count#590L]
+Keys [2]: [category#560, channel#556]
+Functions [4]: [sum(revenue_units#568L), sum(cost_units#569L), sum(profit_units#570L), count(distinct order_id#553)]
+Aggregate Attributes [4]: [sum(revenue_units#568L)#578L, sum(cost_units#569L)#579L, sum(profit_units#570L)#580L, count(order_id#553)#581L]
+Results [6]: [category#560, channel#556, sum(revenue_units#568L)#578L AS revenue_units#574L, sum(cost_units#569L)#579L AS cost_units#575L, sum(profit_units#570L)#580L AS profit_units#576L, count(order_id#553)#581L AS orders#577L]
+
+(24) Exchange
+Input [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: rangepartitioning(category#560 ASC NULLS LAST, channel#556 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=1183]
+
+(25) Sort
+Input [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: [category#560 ASC NULLS LAST, channel#556 ASC NULLS LAST], true, 0
+
+(26) AdaptiveSparkPlan
+Output [6]: [category#560, channel#556, revenue_units#574L, cost_units#575L, profit_units#576L, orders#577L]
+Arguments: isFinalPlan=true
+
+
+
+customer_segments | DuckDB
+┌───────────────────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│             #0            │
+│__internal_decompress_strin│
+│           g(#1)           │
+│             #2            │
+│             #3            │
+│                           │
+│          ~0 rows          │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│          ORDER_BY         │
+│    ────────────────────   │
+│     buyers.channel ASC    │
+│    CASE  WHEN ((buyers    │
+│ .revenue_units >= 10000000│
+│ )) THEN ('1000_USD_plus') │
+│        WHEN ((buyers      │
+│ .revenue_units >= 2000000)│
+│ ) THEN ('200_to_1000_USD')│
+│  ELSE 'under_200_USD' END │
+│             ASC           │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│             #0            │
+│__internal_compress_string_│
+│        uhugeint(#1)       │
+│             #2            │
+│             #3            │
+│                           │
+│       ~383,232 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│             #0            │
+│__internal_decompress_strin│
+│           g(#1)           │
+│             #2            │
+│             #3            │
+│                           │
+│       ~383,232 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       HASH_GROUP_BY       │
+│    ────────────────────   │
+│          Groups:          │
+│             #0            │
+│             #1            │
+│                           │
+│        Aggregates:        │
+│        count_star()       │
+│          sum(#2)          │
+│                           │
+│       ~383,232 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│          channel          │
+│__internal_compress_string_│
+│   uhugeint(CASE  WHEN (   │
+│ (revenue_units >= 10000000│
+│ )) THEN ('1000_USD_plus') │
+│   WHEN ((revenue_units >= │
+│      2000000)) THEN (     │
+│  '200_to_1000_USD') ELSE  │
+│    'under_200_USD' END)   │
+│       revenue_units       │
+│                           │
+│       ~606,264 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│          channel          │
+│       revenue_units       │
+│                           │
+│       ~606,264 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       HASH_GROUP_BY       │
+│    ────────────────────   │
+│          Groups:          │
+│             #0            │
+│             #1            │
+│                           │
+│    Aggregates: sum(#2)    │
+│                           │
+│       ~606,264 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│          party_id         │
+│          channel          │
+│       revenue_units       │
+│                           │
+│       ~606,265 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│       PARQUET_SCAN        │
+│    ────────────────────   │
+│         Function:         │
+│        PARQUET_SCAN       │
+│                           │
+│        Projections:       │
+│          channel          │
+│          party_id         │
+│       revenue_units       │
+│                           │
+│       ~606,265 rows       │
+└───────────────────────────┘
+
+
+customer_segments | Spark SQL
+== Physical Plan ==
+AdaptiveSparkPlan (28)
++- == Final Plan ==
+   ResultQueryStage (18)
+   +- * Sort (17)
+      +- AQEShuffleRead (16)
+         +- ShuffleQueryStage (15), Statistics(sizeInBytes=384.0 B, rowCount=6)
+            +- Exchange (14)
+               +- * HashAggregate (13)
+                  +- AQEShuffleRead (12)
+                     +- ShuffleQueryStage (11), Statistics(sizeInBytes=384.0 B, rowCount=6)
+                        +- Exchange (10)
+                           +- * HashAggregate (9)
+                              +- * Project (8)
+                                 +- * HashAggregate (7)
+                                    +- AQEShuffleRead (6)
+                                       +- ShuffleQueryStage (5), Statistics(sizeInBytes=5.8 MiB, rowCount=9.56E+4)
+                                          +- Exchange (4)
+                                             +- * HashAggregate (3)
+                                                +- * ColumnarToRow (2)
+                                                   +- Scan parquet  (1)
++- == Initial Plan ==
+   Sort (27)
+   +- Exchange (26)
+      +- HashAggregate (25)
+         +- Exchange (24)
+            +- HashAggregate (23)
+               +- Project (22)
+                  +- HashAggregate (21)
+                     +- Exchange (20)
+                        +- HashAggregate (19)
+                           +- Scan parquet  (1)
+
+
+(1) Scan parquet 
+Output [3]: [channel#715, party_id#716, revenue_units#727L]
+Batched: true
+Location: InMemoryFileIndex [file:/D:/BK/HK26/BigDataAnalyticsAndBI/BTL/RetailInsight/data/adventureworks/warehouse/runs/20261126T084820790311Z/load_scale_5/synthetic_fact.parquet]
+ReadSchema: struct<channel:string,party_id:string,revenue_units:bigint>
+
+(2) ColumnarToRow [codegen id : 1]
+Input [3]: [channel#715, party_id#716, revenue_units#727L]
+
+(3) HashAggregate [codegen id : 1]
+Input [3]: [channel#715, party_id#716, revenue_units#727L]
+Keys [2]: [party_id#716, channel#715]
+Functions [1]: [partial_sum(revenue_units#727L)]
+Aggregate Attributes [1]: [sum#745L]
+Results [3]: [party_id#716, channel#715, sum#746L]
+
+(4) Exchange
+Input [3]: [party_id#716, channel#715, sum#746L]
+Arguments: hashpartitioning(party_id#716, channel#715, 4), ENSURE_REQUIREMENTS, [plan_id=1699]
+
+(5) ShuffleQueryStage
+Output [3]: [party_id#716, channel#715, sum#746L]
+Arguments: 0
+
+(6) AQEShuffleRead
+Input [3]: [party_id#716, channel#715, sum#746L]
+Arguments: coalesced
+
+(7) HashAggregate [codegen id : 2]
+Input [3]: [party_id#716, channel#715, sum#746L]
+Keys [2]: [party_id#716, channel#715]
+Functions [1]: [sum(revenue_units#727L)]
+Aggregate Attributes [1]: [sum(revenue_units#727L)#737L]
+Results [2]: [channel#715, sum(revenue_units#727L)#737L AS revenue_units#736L]
+
+(8) Project [codegen id : 2]
+Output [3]: [channel#715, revenue_units#736L, CASE WHEN (revenue_units#736L >= 10000000) THEN 1000_USD_plus WHEN (revenue_units#736L >= 2000000) THEN 200_to_1000_USD ELSE under_200_USD END AS _groupingexpression#740]
+Input [2]: [channel#715, revenue_units#736L]
+
+(9) HashAggregate [codegen id : 2]
+Input [3]: [channel#715, revenue_units#736L, _groupingexpression#740]
+Keys [2]: [channel#715, _groupingexpression#740]
+Functions [2]: [partial_count(1), partial_sum(revenue_units#736L)]
+Aggregate Attributes [2]: [count#741L, sum#742L]
+Results [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+
+(10) Exchange
+Input [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+Arguments: hashpartitioning(channel#715, _groupingexpression#740, 4), ENSURE_REQUIREMENTS, [plan_id=1754]
+
+(11) ShuffleQueryStage
+Output [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+Arguments: 1
+
+(12) AQEShuffleRead
+Input [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+Arguments: coalesced
+
+(13) HashAggregate [codegen id : 3]
+Input [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+Keys [2]: [channel#715, _groupingexpression#740]
+Functions [2]: [count(1), sum(revenue_units#736L)]
+Aggregate Attributes [2]: [count(1)#738L, sum(revenue_units#736L)#739L]
+Results [4]: [channel#715, _groupingexpression#740 AS segment#733, count(1)#738L AS buyers#734L, sum(revenue_units#736L)#739L AS revenue_units#735L]
+
+(14) Exchange
+Input [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: rangepartitioning(channel#715 ASC NULLS LAST, segment#733 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=1786]
+
+(15) ShuffleQueryStage
+Output [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: 2
+
+(16) AQEShuffleRead
+Input [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: coalesced
+
+(17) Sort [codegen id : 4]
+Input [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: [channel#715 ASC NULLS LAST, segment#733 ASC NULLS LAST], true, 0
+
+(18) ResultQueryStage
+Output [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: 3
+
+(19) HashAggregate
+Input [3]: [channel#715, party_id#716, revenue_units#727L]
+Keys [2]: [party_id#716, channel#715]
+Functions [1]: [partial_sum(revenue_units#727L)]
+Aggregate Attributes [1]: [sum#745L]
+Results [3]: [party_id#716, channel#715, sum#746L]
+
+(20) Exchange
+Input [3]: [party_id#716, channel#715, sum#746L]
+Arguments: hashpartitioning(party_id#716, channel#715, 4), ENSURE_REQUIREMENTS, [plan_id=1665]
+
+(21) HashAggregate
+Input [3]: [party_id#716, channel#715, sum#746L]
+Keys [2]: [party_id#716, channel#715]
+Functions [1]: [sum(revenue_units#727L)]
+Aggregate Attributes [1]: [sum(revenue_units#727L)#737L]
+Results [2]: [channel#715, sum(revenue_units#727L)#737L AS revenue_units#736L]
+
+(22) Project
+Output [3]: [channel#715, revenue_units#736L, CASE WHEN (revenue_units#736L >= 10000000) THEN 1000_USD_plus WHEN (revenue_units#736L >= 2000000) THEN 200_to_1000_USD ELSE under_200_USD END AS _groupingexpression#740]
+Input [2]: [channel#715, revenue_units#736L]
+
+(23) HashAggregate
+Input [3]: [channel#715, revenue_units#736L, _groupingexpression#740]
+Keys [2]: [channel#715, _groupingexpression#740]
+Functions [2]: [partial_count(1), partial_sum(revenue_units#736L)]
+Aggregate Attributes [2]: [count#741L, sum#742L]
+Results [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+
+(24) Exchange
+Input [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+Arguments: hashpartitioning(channel#715, _groupingexpression#740, 4), ENSURE_REQUIREMENTS, [plan_id=1670]
+
+(25) HashAggregate
+Input [4]: [channel#715, _groupingexpression#740, count#743L, sum#744L]
+Keys [2]: [channel#715, _groupingexpression#740]
+Functions [2]: [count(1), sum(revenue_units#736L)]
+Aggregate Attributes [2]: [count(1)#738L, sum(revenue_units#736L)#739L]
+Results [4]: [channel#715, _groupingexpression#740 AS segment#733, count(1)#738L AS buyers#734L, sum(revenue_units#736L)#739L AS revenue_units#735L]
+
+(26) Exchange
+Input [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: rangepartitioning(channel#715 ASC NULLS LAST, segment#733 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=1673]
+
+(27) Sort
+Input [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: [channel#715 ASC NULLS LAST, segment#733 ASC NULLS LAST], true, 0
+
+(28) AdaptiveSparkPlan
+Output [4]: [channel#715, segment#733, buyers#734L, revenue_units#735L]
+Arguments: isFinalPlan=true
+
+

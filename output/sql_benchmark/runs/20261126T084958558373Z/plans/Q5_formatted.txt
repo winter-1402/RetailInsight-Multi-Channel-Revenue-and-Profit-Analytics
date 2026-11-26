@@ -1,0 +1,95 @@
+== Physical Plan ==
+AdaptiveSparkPlan (16)
++- Sort (15)
+   +- Exchange (14)
+      +- HashAggregate (13)
+         +- Exchange (12)
+            +- HashAggregate (11)
+               +- HashAggregate (10)
+                  +- Exchange (9)
+                     +- HashAggregate (8)
+                        +- Project (7)
+                           +- BroadcastHashJoin Inner BuildRight (6)
+                              :- Union (3)
+                              :  :- LocalTableScan (1)
+                              :  +- LocalTableScan (2)
+                              +- BroadcastExchange (5)
+                                 +- LocalTableScan (4)
+
+
+(1) LocalTableScan
+Output [6]: [OrderDateKey#22L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+Arguments: [OrderDateKey#22L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+
+(2) LocalTableScan
+Output [6]: [OrderDateKey#31L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+Arguments: [OrderDateKey#31L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+
+(3) Union
+
+(4) LocalTableScan
+Output [2]: [DateKey#15L, FullDateAlternateKey#16]
+Arguments: [DateKey#15L, FullDateAlternateKey#16]
+
+(5) BroadcastExchange
+Input [2]: [DateKey#15L, FullDateAlternateKey#16]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11610]
+
+(6) BroadcastHashJoin
+Left keys [1]: [OrderDateKey#22L]
+Right keys [1]: [DateKey#15L]
+Join type: Inner
+Join condition: None
+
+(7) Project
+Output [6]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, date_format(cast(FullDateAlternateKey#16 as timestamp), yyyy-MM, Some(UTC)) AS _groupingexpression#2259]
+Input [8]: [OrderDateKey#22L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, DateKey#15L, FullDateAlternateKey#16]
+
+(8) HashAggregate
+Input [6]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, _groupingexpression#2259]
+Keys [3]: [_groupingexpression#2259, channel#20, order_id#19]
+Functions [3]: [partial_sum(revenue_units#24L), partial_sum(cost_units#25L), partial_sum(profit_units#26L)]
+Aggregate Attributes [3]: [sum(revenue_units#24L)#2255L, sum(cost_units#25L)#2256L, sum(profit_units#26L)#2257L]
+Results [6]: [_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L]
+
+(9) Exchange
+Input [6]: [_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L]
+Arguments: hashpartitioning(_groupingexpression#2259, channel#20, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=11615]
+
+(10) HashAggregate
+Input [6]: [_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L]
+Keys [3]: [_groupingexpression#2259, channel#20, order_id#19]
+Functions [3]: [merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L)]
+Aggregate Attributes [3]: [sum(revenue_units#24L)#2255L, sum(cost_units#25L)#2256L, sum(profit_units#26L)#2257L]
+Results [6]: [_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L]
+
+(11) HashAggregate
+Input [6]: [_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L]
+Keys [2]: [_groupingexpression#2259, channel#20]
+Functions [4]: [merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L), partial_count(distinct order_id#19)]
+Aggregate Attributes [4]: [sum(revenue_units#24L)#2255L, sum(cost_units#25L)#2256L, sum(profit_units#26L)#2257L, count(order_id#19)#2258L]
+Results [6]: [_groupingexpression#2259, channel#20, sum#2261L, sum#2263L, sum#2265L, count#2268L]
+
+(12) Exchange
+Input [6]: [_groupingexpression#2259, channel#20, sum#2261L, sum#2263L, sum#2265L, count#2268L]
+Arguments: hashpartitioning(_groupingexpression#2259, channel#20, 4), ENSURE_REQUIREMENTS, [plan_id=11619]
+
+(13) HashAggregate
+Input [6]: [_groupingexpression#2259, channel#20, sum#2261L, sum#2263L, sum#2265L, count#2268L]
+Keys [2]: [_groupingexpression#2259, channel#20]
+Functions [4]: [sum(revenue_units#24L), sum(cost_units#25L), sum(profit_units#26L), count(distinct order_id#19)]
+Aggregate Attributes [4]: [sum(revenue_units#24L)#2255L, sum(cost_units#25L)#2256L, sum(profit_units#26L)#2257L, count(order_id#19)#2258L]
+Results [6]: [_groupingexpression#2259 AS purchase_month#2250, channel#20, sum(revenue_units#24L)#2255L AS revenue_units#2251L, sum(cost_units#25L)#2256L AS cost_units#2252L, sum(profit_units#26L)#2257L AS profit_units#2253L, count(order_id#19)#2258L AS orders#2254L]
+
+(14) Exchange
+Input [6]: [purchase_month#2250, channel#20, revenue_units#2251L, cost_units#2252L, profit_units#2253L, orders#2254L]
+Arguments: rangepartitioning(purchase_month#2250 ASC NULLS FIRST, channel#20 ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=11622]
+
+(15) Sort
+Input [6]: [purchase_month#2250, channel#20, revenue_units#2251L, cost_units#2252L, profit_units#2253L, orders#2254L]
+Arguments: [purchase_month#2250 ASC NULLS FIRST, channel#20 ASC NULLS FIRST], true, 0
+
+(16) AdaptiveSparkPlan
+Output [6]: [purchase_month#2250, channel#20, revenue_units#2251L, cost_units#2252L, profit_units#2253L, orders#2254L]
+Arguments: isFinalPlan=false
+

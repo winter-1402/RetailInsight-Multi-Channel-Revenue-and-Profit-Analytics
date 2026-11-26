@@ -1,0 +1,53 @@
+{
+  "python": "3.12.8",
+  "os": "Windows-11-10.0.26300-SP0",
+  "cpu_model": "Intel(R) Core(TM) Ultra 7 155H",
+  "logical_cpus": 22,
+  "physical_cores": 16,
+  "ram_bytes": 16866729984,
+  "architecture": "AMD64",
+  "pandas": "2.2.3",
+  "pyarrow": "21.0.0",
+  "duckdb": "1.4.2",
+  "duckdb_threads": 2,
+  "arrow_cpu_count": 2,
+  "started_at_utc": "2026-11-26T08:49:23.755309+00:00",
+  "input_path": "D:\\BK\\HK26\\BigDataAnalyticsAndBI\\BTL\\RetailInsight\\data\\adventureworks\\warehouse\\runs\\20261126T084820790311Z\\load_scale_5\\synthetic_fact.parquet",
+  "input_sha256": "650b12fbeed594746c864d66195de75637bf9bdf75f48b36699d7daa5e36a997",
+  "input_bytes": 12096568,
+  "input_rows": 606265,
+  "input_schema": "line_id: string\norder_id: string\norder_date: timestamp[us]\npurchase_month: string\nchannel: string\nparty_id: string\nProductKey: string\nproduct: string\ncategory: string\nsubcategory: string\nregion: string\ncountry: string\nCurrencyAlternateKey: string\nquantity: int64\ngross_units: int64\ndiscount_units: int64\nrevenue_units: int64\ncost_units: int64\nprofit_units: int64\nstore_id: string\nstore: string\nstore_type: string\n-- schema metadata --\npandas: '{\"index_columns\": [], \"column_indexes\": [], \"columns\": [{\"name\":' + 2694",
+  "repeats": 3,
+  "benchmark_source_sha256": "e27321770cdf9eedab8912de9dead1175767d1cc020f4a6c83b32de9ed620801",
+  "sql_sha256": {
+    "01_monthly.sql": "b5d3a834a9eb127339718a28943c038e26e08bed45249705be7a2634250cbd19",
+    "02_region.sql": "e1b0d864a99fc003aa839b0262b6d4a417ba3e4aa47be8653232de56dbd7ae7b",
+    "03_category.sql": "92fdd313880d13b47168278ca4652f8b876b2f9bd32d2e83fe8a21ef07c7eecf",
+    "04_customer_segments.sql": "278e2cc25da0187d599074f34d6278d6853c72ec9e00e41e9c31f8bf592c303b"
+  },
+  "baseline": "First measured pandas result per query; exact per-group comparison",
+  "timing_boundary": "Parquet scan + groupby + distinct + sort + collect to pandas; no persist/cache",
+  "cache_policy": "OS cache not cleared; rotate three engines; no warm-up excluded",
+  "timer": "time.perf_counter wall-clock seconds",
+  "storage_note": "Local filesystem; disk throughput and peak memory not measured",
+  "java_home": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.17.10-hotspot",
+  "status": "passed",
+  "spark_startup_seconds": 6.813990900060162,
+  "spark": "4.0.1",
+  "master": "local[2]",
+  "shuffle_partitions": 4,
+  "spark_config": {
+    "spark.driver.memory": "default",
+    "spark.executor.memory": "default",
+    "spark.default.parallelism": "default"
+  },
+  "sql_config": {
+    "spark.sql.session.timeZone": "UTC",
+    "spark.sql.adaptive.enabled": "true",
+    "spark.sql.execution.arrow.pyspark.enabled": "false",
+    "spark.sql.ansi.enabled": "true"
+  },
+  "java_version": "openjdk version \"17.0.17\" 2025-10-21\nOpenJDK Runtime Environment Temurin-17.0.17+10 (build 17.0.17+10)\nOpenJDK 64-Bit Server VM Temurin-17.0.17+10 (build 17.0.17+10, mixed mode, sharing)\n",
+  "duckdb_startup_seconds": 0.013454900123178959,
+  "input_sha256_after": "650b12fbeed594746c864d66195de75637bf9bdf75f48b36699d7daa5e36a997"
+}

@@ -1,0 +1,37 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 4
+   +- *(4) Sort [BusinessType#10 ASC NULLS LAST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 3
+            +- Exchange rangepartitioning(BusinessType#10 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=12466]
+               +- *(3) HashAggregate(keys=[BusinessType#10], functions=[sum(revenue_units#33L), sum(cost_units#34L), sum(profit_units#35L), count(distinct order_id#28)], output=[BusinessType#10, revenue_units#2378L, cost_units#2379L, profit_units#2380L, orders#2381L])
+                  +- AQEShuffleRead coalesced
+                     +- ShuffleQueryStage 2
+                        +- Exchange hashpartitioning(BusinessType#10, 4), ENSURE_REQUIREMENTS, [plan_id=12436]
+                           +- *(2) HashAggregate(keys=[BusinessType#10], functions=[merge_sum(revenue_units#33L), merge_sum(cost_units#34L), merge_sum(profit_units#35L), partial_count(distinct order_id#28)], output=[BusinessType#10, sum#2387L, sum#2389L, sum#2391L, count#2394L])
+                              +- *(2) HashAggregate(keys=[BusinessType#10, order_id#28], functions=[merge_sum(revenue_units#33L), merge_sum(cost_units#34L), merge_sum(profit_units#35L)], output=[BusinessType#10, order_id#28, sum#2387L, sum#2389L, sum#2391L])
+                                 +- AQEShuffleRead coalesced
+                                    +- ShuffleQueryStage 1
+                                       +- Exchange hashpartitioning(BusinessType#10, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=12394]
+                                          +- *(1) HashAggregate(keys=[BusinessType#10, order_id#28], functions=[partial_sum(revenue_units#33L), partial_sum(cost_units#34L), partial_sum(profit_units#35L)], output=[BusinessType#10, order_id#28, sum#2387L, sum#2389L, sum#2391L])
+                                             +- *(1) Project [order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L, BusinessType#10]
+                                                +- *(1) BroadcastHashJoin [ResellerKey#32L], [ResellerKey#8L], Inner, BuildRight, false
+                                                   :- *(1) LocalTableScan [order_id#28, ResellerKey#32L, revenue_units#33L, cost_units#34L, profit_units#35L]
+                                                   +- BroadcastQueryStage 0
+                                                      +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=12290]
+                                                         +- LocalTableScan [ResellerKey#8L, BusinessType#10]
++- == Initial Plan ==
+   Sort [BusinessType#10 ASC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(BusinessType#10 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=12302]
+      +- HashAggregate(keys=[BusinessType#10], functions=[sum(revenue_units#33L), sum(cost_units#34L), sum(profit_units#35L), count(distinct order_id#28)], output=[BusinessType#10, revenue_units#2378L, cost_units#2379L, profit_units#2380L, orders#2381L])
+         +- Exchange hashpartitioning(BusinessType#10, 4), ENSURE_REQUIREMENTS, [plan_id=12299]
+            +- HashAggregate(keys=[BusinessType#10], functions=[merge_sum(revenue_units#33L), merge_sum(cost_units#34L), merge_sum(profit_units#35L), partial_count(distinct order_id#28)], output=[BusinessType#10, sum#2387L, sum#2389L, sum#2391L, count#2394L])
+               +- HashAggregate(keys=[BusinessType#10, order_id#28], functions=[merge_sum(revenue_units#33L), merge_sum(cost_units#34L), merge_sum(profit_units#35L)], output=[BusinessType#10, order_id#28, sum#2387L, sum#2389L, sum#2391L])
+                  +- Exchange hashpartitioning(BusinessType#10, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=12295]
+                     +- HashAggregate(keys=[BusinessType#10, order_id#28], functions=[partial_sum(revenue_units#33L), partial_sum(cost_units#34L), partial_sum(profit_units#35L)], output=[BusinessType#10, order_id#28, sum#2387L, sum#2389L, sum#2391L])
+                        +- Project [order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L, BusinessType#10]
+                           +- BroadcastHashJoin [ResellerKey#32L], [ResellerKey#8L], Inner, BuildRight, false
+                              :- LocalTableScan [order_id#28, ResellerKey#32L, revenue_units#33L, cost_units#34L, profit_units#35L]
+                              +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=12290]
+                                 +- LocalTableScan [ResellerKey#8L, BusinessType#10]

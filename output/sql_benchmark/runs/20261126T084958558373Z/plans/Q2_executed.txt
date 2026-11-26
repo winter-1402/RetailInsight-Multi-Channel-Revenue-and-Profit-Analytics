@@ -1,0 +1,37 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 4
+   +- *(4) Sort [ResellerKey#32L ASC NULLS FIRST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 3
+            +- Exchange rangepartitioning(ResellerKey#32L ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=10784]
+               +- *(3) HashAggregate(keys=[ResellerKey#32L, ResellerName#11], functions=[sum(revenue_units#33L), count(distinct order_id#28)], output=[ResellerKey#32L, ResellerName#11, revenue_units#2069L, orders#2070L])
+                  +- AQEShuffleRead coalesced
+                     +- ShuffleQueryStage 2
+                        +- Exchange hashpartitioning(ResellerKey#32L, ResellerName#11, 4), ENSURE_REQUIREMENTS, [plan_id=10754]
+                           +- *(2) HashAggregate(keys=[ResellerKey#32L, ResellerName#11], functions=[merge_sum(revenue_units#33L), partial_count(distinct order_id#28)], output=[ResellerKey#32L, ResellerName#11, sum#2074L, count#2077L])
+                              +- *(2) HashAggregate(keys=[ResellerKey#32L, ResellerName#11, order_id#28], functions=[merge_sum(revenue_units#33L)], output=[ResellerKey#32L, ResellerName#11, order_id#28, sum#2074L])
+                                 +- AQEShuffleRead coalesced
+                                    +- ShuffleQueryStage 1
+                                       +- Exchange hashpartitioning(ResellerKey#32L, ResellerName#11, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=10712]
+                                          +- *(1) HashAggregate(keys=[ResellerKey#32L, ResellerName#11, order_id#28], functions=[partial_sum(revenue_units#33L)], output=[ResellerKey#32L, ResellerName#11, order_id#28, sum#2074L])
+                                             +- *(1) Project [order_id#28, ResellerKey#32L, revenue_units#33L, ResellerName#11]
+                                                +- *(1) BroadcastHashJoin [ResellerKey#32L], [ResellerKey#8L], Inner, BuildRight, false
+                                                   :- *(1) LocalTableScan [order_id#28, ResellerKey#32L, revenue_units#33L]
+                                                   +- BroadcastQueryStage 0
+                                                      +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10608]
+                                                         +- LocalTableScan [ResellerKey#8L, ResellerName#11]
++- == Initial Plan ==
+   Sort [ResellerKey#32L ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(ResellerKey#32L ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=10620]
+      +- HashAggregate(keys=[ResellerKey#32L, ResellerName#11], functions=[sum(revenue_units#33L), count(distinct order_id#28)], output=[ResellerKey#32L, ResellerName#11, revenue_units#2069L, orders#2070L])
+         +- Exchange hashpartitioning(ResellerKey#32L, ResellerName#11, 4), ENSURE_REQUIREMENTS, [plan_id=10617]
+            +- HashAggregate(keys=[ResellerKey#32L, ResellerName#11], functions=[merge_sum(revenue_units#33L), partial_count(distinct order_id#28)], output=[ResellerKey#32L, ResellerName#11, sum#2074L, count#2077L])
+               +- HashAggregate(keys=[ResellerKey#32L, ResellerName#11, order_id#28], functions=[merge_sum(revenue_units#33L)], output=[ResellerKey#32L, ResellerName#11, order_id#28, sum#2074L])
+                  +- Exchange hashpartitioning(ResellerKey#32L, ResellerName#11, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=10613]
+                     +- HashAggregate(keys=[ResellerKey#32L, ResellerName#11, order_id#28], functions=[partial_sum(revenue_units#33L)], output=[ResellerKey#32L, ResellerName#11, order_id#28, sum#2074L])
+                        +- Project [order_id#28, ResellerKey#32L, revenue_units#33L, ResellerName#11]
+                           +- BroadcastHashJoin [ResellerKey#32L], [ResellerKey#8L], Inner, BuildRight, false
+                              :- LocalTableScan [order_id#28, ResellerKey#32L, revenue_units#33L]
+                              +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10608]
+                                 +- LocalTableScan [ResellerKey#8L, ResellerName#11]

@@ -29,7 +29,7 @@ Mỗi file có URL, SHA-256, số byte và schema trong manifest; quality JSON l
 
 ## 3 Pipeline và mô hình dữ liệu
 
-Nguồn Microsoft → Python kiểm tra/làm sạch → Parquet Silver → mart một dòng mặt hàng → Spark SQL/pandas đối chiếu → dashboard và quyết định. Dashboard tính lại từ cùng mart khi lọc, trang kiểm chứng đọc đầu ra Spark và benchmark toàn run.
+Nguồn Microsoft → Python kiểm tra/làm sạch → Parquet Silver → mart một dòng mặt hàng → đối chiếu công cụ → dashboard và quyết định. Dashboard tính lại từ cùng mart khi lọc, trang kiểm chứng đọc đầu ra Spark và benchmark toàn run.
 
 Khóa dòng: kênh + SalesOrderNumber + SalesOrderLineNumber. Khóa đơn thêm tiền tố kênh. Chiều sản phẩm → nhóm → danh mục, vùng, đại lý DimReseller và tiền tệ được ghép nhiều-một; có kiểm tra không nhân đôi doanh thu. DimReseller có 701 đại lý, 635 có giao dịch; Internet không có mã cửa hàng vật lý. Mỗi run có thư mục riêng; chỉ chuyển current.txt khi nạp thành công.
 
@@ -57,21 +57,22 @@ KPI tăng trưởng chọn tháng đủ phạm vi nguồn gần nhất và yêu 
 
 ## 5 Baseline và thực nghiệm
 
-Ba workload tổng hợp doanh thu, giá vốn, lợi nhuận và số đơn theo tháng/kênh, vùng/kênh, danh mục/kênh. Hai công cụ đọc cùng Parquet, cùng cột và cùng phép tính. Kiểm tra chính xác từng nhóm bằng assert_frame_equal.
+Các truy vấn tổng hợp theo tháng/kênh, vùng/kênh, danh mục/kênh và phân khúc người mua. Các công cụ đọc cùng Parquet và dùng cùng phép tính. Kết quả được đối chiếu từng nhóm với pandas.
 
-Mỗi công cụ chạy 3 lần/truy vấn, thứ tự luân phiên; không loại lượt đầu; không dùng persist/cache Spark; không xóa cache OS. JVM khởi động riêng 37.69 giây. Mốc đo gồm đọc, groupby/distinct, sort và collect, không bao gồm tải nguồn hoặc tạo mart.
+Mỗi công cụ chạy 3 lần/truy vấn, thứ tự luân phiên; không loại lượt đầu; không dùng persist/cache Spark; không xóa cache OS. JVM khởi động riêng 26.92 giây. Mốc đo gồm đọc, groupby/distinct, sort và collect, không bao gồm tải nguồn hoặc tạo mart.
 
-Cấu hình: Windows-11-10.0.26300-SP0; Python 3.12.8; Spark 4.0.1; 22 CPU logic; local[2], 4 shuffle partitions; JDK theo JAVA_HOME trong metadata.
+Cấu hình: Windows-11-10.0.26300-SP0; Python 3.12.8; Spark 4.0.1; 22 CPU logic; local[2], 4 shuffle partitions; JDK trong metadata.
 
-| Truy vấn | pandas trung vị s | Spark SQL trung vị s | Độ khớp |
-|---|---:|---:|---|
-| monthly | 0.0622 | 0.7002 | Chính xác |
-| region | 0.0734 | 0.5319 | Chính xác |
-| category | 0.0767 | 0.6113 | Chính xác |
+| Truy vấn | pandas (s) | DuckDB (s) | Spark SQL (s) | Khớp |
+| --- | ---: | ---: | ---: | --- |
+| monthly | 0.1040 | 0.0259 | 0.9143 | Chính xác |
+| region | 0.1081 | 0.0287 | 0.6163 | Chính xác |
+| category | 0.1065 | 0.0293 | 0.5403 | Chính xác |
+| customer_segments | 0.0958 | 0.0187 | 0.5573 | Chính xác |
 
 Thử tải 5×: 606,265 dòng nhân bản, mã đơn/người mua có hậu tố. Đây là bản sao đo tải, không phải giao dịch kinh doanh mới. Bảng từng lần đo nằm trong evidence.
 
-pandas nhanh hơn Spark SQL trong các phép đo local đã bàn giao. Overhead JVM, lập kế hoạch, shuffle và trả kết quả có thể lấn át lợi ích song song ở quy mô này. Chưa xác định ngưỡng chuyển giao, giới hạn cực đại hoặc năng lực của một cụm phân tán.
+Thời gian trung vị phụ thuộc truy vấn và cấu hình. Chi phí lập kế hoạch, shuffle và trả kết quả về Python ảnh hưởng các số đo Spark trên máy local. Giới hạn và năng lực cụm phân tán cần phép đo riêng.
 
 ## 6 Nhận xét và quyết định có điều kiện
 
@@ -91,7 +92,7 @@ Bốn trang: Tổng quan; Kênh và thị trường; Sản phẩm; Dữ liệu v
 
 Các ca kiểm thử, phương pháp đối chiếu và giới hạn kiểm tra UI: [VALIDATION.md](VALIDATION.md). Hướng dẫn chạy: [README](../README.md). Demo: [DEMO.md](DEMO.md). Log và dữ liệu mẫu: [output/evidence](../output/evidence).
 
-[Repository dự án](https://github.com/winter-1402/RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics); nhánh triển khai `feat/assignment-completion-20261116`. Trạng thái CI cần kiểm tra trên đúng commit ở GitHub Actions. Ảnh giao diện thật và xác nhận từng bước: [SCREENSHOT_REVIEW.md](SCREENSHOT_REVIEW.md).
+[Repository dự án](https://github.com/winter-1402/RetailInsight-Multi-Channel-Revenue-and-Profit-Analytics). Trạng thái CI cần kiểm tra trên đúng commit ở GitHub Actions. Ảnh giao diện thật và xác nhận từng bước: [SCREENSHOT_REVIEW.md](SCREENSHOT_REVIEW.md).
 
 ## 8 Nguồn và công cụ AI
 

@@ -1,0 +1,123 @@
+== Physical Plan ==
+AdaptiveSparkPlan (22)
++- Sort (21)
+   +- Exchange (20)
+      +- Filter (19)
+         +- Window (18)
+            +- WindowGroupLimit (17)
+               +- Sort (16)
+                  +- Exchange (15)
+                     +- WindowGroupLimit (14)
+                        +- Sort (13)
+                           +- HashAggregate (12)
+                              +- Exchange (11)
+                                 +- HashAggregate (10)
+                                    +- Project (9)
+                                       +- BroadcastHashJoin LeftOuter BuildRight (8)
+                                          :- Project (5)
+                                          :  +- BroadcastHashJoin Inner BuildRight (4)
+                                          :     :- LocalTableScan (1)
+                                          :     +- BroadcastExchange (3)
+                                          :        +- LocalTableScan (2)
+                                          +- BroadcastExchange (7)
+                                             +- LocalTableScan (6)
+
+
+(1) LocalTableScan
+Output [2]: [ResellerKey#2358L, revenue_units#2359L]
+Arguments: [ResellerKey#2358L, revenue_units#2359L]
+
+(2) LocalTableScan
+Output [3]: [ResellerKey#2362L, GeographyKey#2363L, ResellerName#2365]
+Arguments: [ResellerKey#2362L, GeographyKey#2363L, ResellerName#2365]
+
+(3) BroadcastExchange
+Input [3]: [ResellerKey#2362L, GeographyKey#2363L, ResellerName#2365]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11874]
+
+(4) BroadcastHashJoin
+Left keys [1]: [ResellerKey#2358L]
+Right keys [1]: [ResellerKey#2362L]
+Join type: Inner
+Join condition: None
+
+(5) Project
+Output [4]: [ResellerKey#2358L, revenue_units#2359L, GeographyKey#2363L, ResellerName#2365]
+Input [5]: [ResellerKey#2358L, revenue_units#2359L, ResellerKey#2362L, GeographyKey#2363L, ResellerName#2365]
+
+(6) LocalTableScan
+Output [3]: [GeographyKey#2366L, StateProvinceCode#2367, CountryRegionCode#2368]
+Arguments: [GeographyKey#2366L, StateProvinceCode#2367, CountryRegionCode#2368]
+
+(7) BroadcastExchange
+Input [3]: [GeographyKey#2366L, StateProvinceCode#2367, CountryRegionCode#2368]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11878]
+
+(8) BroadcastHashJoin
+Left keys [1]: [GeographyKey#2363L]
+Right keys [1]: [GeographyKey#2366L]
+Join type: LeftOuter
+Join condition: None
+
+(9) Project
+Output [5]: [ResellerKey#2358L, revenue_units#2359L, ResellerName#2365, StateProvinceCode#2367, CountryRegionCode#2368]
+Input [7]: [ResellerKey#2358L, revenue_units#2359L, GeographyKey#2363L, ResellerName#2365, GeographyKey#2366L, StateProvinceCode#2367, CountryRegionCode#2368]
+
+(10) HashAggregate
+Input [5]: [ResellerKey#2358L, revenue_units#2359L, ResellerName#2365, StateProvinceCode#2367, CountryRegionCode#2368]
+Keys [4]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365]
+Functions [1]: [partial_sum(revenue_units#2359L)]
+Aggregate Attributes [1]: [sum#2371L]
+Results [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, sum#2372L]
+
+(11) Exchange
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, sum#2372L]
+Arguments: hashpartitioning(CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, 4), ENSURE_REQUIREMENTS, [plan_id=11883]
+
+(12) HashAggregate
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, sum#2372L]
+Keys [4]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365]
+Functions [1]: [sum(revenue_units#2359L)]
+Aggregate Attributes [1]: [sum(revenue_units#2359L)#2327L]
+Results [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, sum(revenue_units#2359L)#2327L AS revenue_units#2369L]
+
+(13) Sort
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L]
+Arguments: [CountryRegionCode#2368 ASC NULLS FIRST, StateProvinceCode#2367 ASC NULLS FIRST, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], false, 0
+
+(14) WindowGroupLimit
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L]
+Arguments: [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], row_number(), 3, Partial
+
+(15) Exchange
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L]
+Arguments: hashpartitioning(CountryRegionCode#2368, StateProvinceCode#2367, 4), ENSURE_REQUIREMENTS, [plan_id=11889]
+
+(16) Sort
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L]
+Arguments: [CountryRegionCode#2368 ASC NULLS FIRST, StateProvinceCode#2367 ASC NULLS FIRST, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], false, 0
+
+(17) WindowGroupLimit
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L]
+Arguments: [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST], row_number(), 3, Final
+
+(18) Window
+Input [5]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L]
+Arguments: [row_number() windowspecdefinition(CountryRegionCode#2368, StateProvinceCode#2367, revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#2370], [CountryRegionCode#2368, StateProvinceCode#2367], [revenue_units#2369L DESC NULLS LAST, ResellerKey#2358L ASC NULLS FIRST]
+
+(19) Filter
+Input [6]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L, rank#2370]
+Condition : (rank#2370 <= 3)
+
+(20) Exchange
+Input [6]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L, rank#2370]
+Arguments: rangepartitioning(CountryRegionCode#2368 ASC NULLS LAST, StateProvinceCode#2367 ASC NULLS LAST, rank#2370 ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=11895]
+
+(21) Sort
+Input [6]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L, rank#2370]
+Arguments: [CountryRegionCode#2368 ASC NULLS LAST, StateProvinceCode#2367 ASC NULLS LAST, rank#2370 ASC NULLS FIRST], true, 0
+
+(22) AdaptiveSparkPlan
+Output [6]: [CountryRegionCode#2368, StateProvinceCode#2367, ResellerKey#2358L, ResellerName#2365, revenue_units#2369L, rank#2370]
+Arguments: isFinalPlan=false
+

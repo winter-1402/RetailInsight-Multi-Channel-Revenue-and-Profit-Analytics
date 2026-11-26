@@ -1,0 +1,12 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 1
+   +- *(1) Sort [ProductKey#0L ASC NULLS FIRST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 0
+            +- Exchange rangepartitioning(ProductKey#0L ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=10557]
+               +- LocalTableScan [ProductKey#0L, EnglishProductName#2, list_price_units#3L]
++- == Initial Plan ==
+   Sort [ProductKey#0L ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(ProductKey#0L ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=10557]
+      +- LocalTableScan [ProductKey#0L, EnglishProductName#2, list_price_units#3L]

@@ -4,7 +4,7 @@
 
 Dataset duy nhất là **Microsoft AdventureWorksDW** hiện có. Không dùng BRL/Olist và không sửa, xóa hoặc ghi đè CSV trong `data/raw`. Chỉ đọc nguồn; giữ bảng chuẩn hóa trong bộ nhớ và ghi kết quả đo vào thư mục dẫn xuất riêng. SHA-256 của nguồn trước/sau phải giữ nguyên.
 
-Baseline mart so sánh **pandas với Spark SQL** trên tháng/kênh, vùng/kênh, danh mục/kênh. Bộ Q1–Q8 được triển khai tại `src/benchmark/` để đo JOIN/window trên các bảng riêng; hai bộ có kết quả độc lập. `prepare.py` chuẩn bị bảng, `queries.py` chứa baseline, `runner.py` đo và xuất báo cáo, `mart.py` giữ bộ đo mart; tám SQL nằm trong `src/benchmark/sql/`.
+Benchmark mart so sánh **pandas, DuckDB và Spark SQL** trên tháng/kênh, vùng/kênh, danh mục/kênh và phân khúc. Bộ Q1–Q8 đo JOIN và window trên các bảng đã chuẩn bị. Mã Python ở `src/benchmark/`, tám tệp SQL ở `sql/benchmarks/`.
 
 ## 2. Q1–Q8 điều chỉnh theo dataset
 
@@ -94,7 +94,7 @@ SQL thực thi nằm trong `environment.json` cùng hash; không sao chép sang 
 
 Run **20261117T125908401490Z**: đủ **80/80 mẫu khớp tuyệt đối**, gồm 5 lượt × 2 engine × 8 truy vấn. Hai fact có 60.398 và 60.855 dòng, dùng cùng chín file Parquet cho cả hai engine. Toàn bộ 30 file nguồn giữ nguyên SHA-256; Parquet và SQL không đổi trong phép đo. Toàn bộ **57/57 kiểm thử đạt**.
 
-[Báo cáo và bảng thời gian](../output/sql_benchmark/runs/20261117T125908401490Z/REPORT.md) · [Từng mẫu đo](../output/sql_benchmark/runs/20261117T125908401490Z/measurements.csv) · [Cấu hình thực tế](../output/sql_benchmark/runs/20261117T125908401490Z/environment.json) · [Manifest](../output/sql_benchmark/runs/20261117T125908401490Z/input_manifest.json).
+[Các lượt Q1–Q8 được lưu trong repository](../output/sql_benchmark/README.md).
 
 Trên máy local này, Spark nhanh hơn ở Q5 (median 1,003958 s so với pandas 1,182847 s); pandas nhanh hơn ở bảy Q còn lại. Đây là kết quả lịch sử của triển khai Parquet đã lưu, không phải số đo cho triển khai trong bộ nhớ hiện tại hoặc kết luận cho mọi SQL/dataset. Bộ mart bên dưới là lần đo độc lập trước đó.
 
@@ -114,7 +114,7 @@ Python 3.12.10; pandas 2.2.3; PyArrow 21.0.0; Spark 4.0.1; Java 17.0.12. Spark `
 
 Mỗi ô median lấy từ 5 lượt, tổng **30 mẫu đo**, tất cả khớp. Spark lượt đầu của truy vấn tháng mất 5,6347 giây; lượt này vẫn nằm trong CSV và min/max, không bị bỏ. Các số liệu chỉ cho thấy pandas nhanh hơn trên workload/local dataset này; không chứng minh tốc độ JOIN/window của Q1–Q8 hoặc hiệu quả trên cụm phân tán. Phép đo không kiểm soát hoàn toàn tải nền Windows, cache OS, disk I/O hoặc peak memory.
 
-Minh chứng: [từng lượt](../output/evidence/benchmark.csv), [median/min/max](../output/evidence/benchmark_summary.csv), [cấu hình/hash/schema](../output/evidence/benchmark_environment.json). Các cặp `pandas_monthly/region/category.csv` và `spark_monthly/region/category.csv` trong cùng thư mục cho phép kiểm tra lại từng nhóm.
+Minh chứng [lượt mart hiện hành](../output/evidence/) gồm từng lượt đo, trung vị, cấu hình, kế hoạch SQL và đầu ra của từng công cụ. [Số đo trong báo cáo CO4033](reports/benchmark-20261118/) được lưu riêng theo ngày.
 
 ### Lệnh tái lập trên Windows
 

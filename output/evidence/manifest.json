@@ -1,5 +1,5 @@
 {
-  "run_id": "20261117T024308566452Z",
+  "run_id": "20261126T084820790311Z",
   "source": "https://github.com/microsoft/sql-server-samples",
   "commit": "b47eadc85277f72843647223cde53aa1b85ffcb8",
   "license": "MIT",
@@ -10,8 +10,8 @@
     {
       "file": "FactInternetSales.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/FactInternetSales.csv",
-      "sha256": "0f87171a41f56a40d7f5f6261286e3dde83c88178fff5d55a36636e6150ed3be",
-      "bytes": 11726880,
+      "sha256": "4f827d699f5caae7909fc81395730c41d700c95e3ef0711152e3d18cc1978e1e",
+      "bytes": 11787278,
       "columns": [
         "ProductKey",
         "OrderDateKey",
@@ -44,8 +44,8 @@
     {
       "file": "FactResellerSales.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/FactResellerSales.csv",
-      "sha256": "d682b163017d95a7c3a7e026ecfd909a09f21b4c43750a844a5ce3dea4d1e274",
-      "bytes": 13953049,
+      "sha256": "35c6e6d5bd01d6c87f7795c4120efe215d2dd565836a51631680566316ea829a",
+      "bytes": 14013904,
       "columns": [
         "ProductKey",
         "OrderDateKey",
@@ -123,8 +123,8 @@
     {
       "file": "DimProductSubcategory.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/DimProductSubcategory.csv",
-      "sha256": "4496a2e75fc0279f80acb8b68a8a4e68f88b24271973f4a457e30e1a96cc1f90",
-      "bytes": 1546,
+      "sha256": "7cc2ac21ee62c7633cc672e1650bf47935c7a165c6b282714d62c4c756f1e994",
+      "bytes": 1583,
       "columns": [
         "ProductSubcategoryKey",
         "ProductSubcategoryAlternateKey",
@@ -137,8 +137,8 @@
     {
       "file": "DimProductCategory.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/DimProductCategory.csv",
-      "sha256": "1caaa9b3d7fcc7f238b1216115a502caaad5b9ca9ca035df098db515393c069d",
-      "bytes": 130,
+      "sha256": "5055fced2a06274665b852927deab5cb851ac54ddd1cbbb63e9d84ba021a11a6",
+      "bytes": 134,
       "columns": [
         "ProductCategoryKey",
         "ProductCategoryAlternateKey",
@@ -150,8 +150,8 @@
     {
       "file": "DimSalesTerritory.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/DimSalesTerritory.csv",
-      "sha256": "24945e074b1eb4d76a3c4e8eb750f12e13eccd20f504ed52951c85dd8e3c1c64",
-      "bytes": 878402,
+      "sha256": "d794425d3824bdb8260620e09e43f96c58b2dac1e56d720c8ca457fe40838769",
+      "bytes": 878413,
       "columns": [
         "SalesTerritoryKey",
         "SalesTerritoryAlternateKey",
@@ -164,8 +164,8 @@
     {
       "file": "DimCurrency.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/DimCurrency.csv",
-      "sha256": "9ff911e2d0447204806722e736d74e9686faad7c68b9fe896446ed83264239f6",
-      "bytes": 2104,
+      "sha256": "516351755e203c8fbfe3ffc107222a1d093886aafe7d8ef86b044bbe5534141e",
+      "bytes": 2209,
       "columns": [
         "CurrencyKey",
         "CurrencyAlternateKey",
@@ -175,8 +175,8 @@
     {
       "file": "DimReseller.csv",
       "url": "https://raw.githubusercontent.com/microsoft/sql-server-samples/b47eadc85277f72843647223cde53aa1b85ffcb8/samples/databases/adventure-works/data-warehouse-install-script/DimReseller.csv",
-      "sha256": "676cb16ab4c6855da557f776ff82b0dbac19fe634b7914663c1146b53a58145a",
-      "bytes": 119137,
+      "sha256": "f10435f21d20c02ebe7425327f91c012f4c662dd0e1f415cd97b4bae3bd5dba8",
+      "bytes": 119838,
       "columns": [
         "ResellerKey",
         "GeographyKey",
@@ -211,8 +211,8 @@
   },
   "date_min": "2010-12-29 00:00:00",
   "date_max": "2014-01-28 00:00:00",
-  "duration_seconds": 11.92111700004898,
-  "raw_bytes": 35985099,
+  "duration_seconds": 11.33227019989863,
+  "raw_bytes": 36107210,
   "silver_bytes": 4729901,
   "fact_bytes": 2433440
 }

@@ -1,0 +1,6 @@
+{
+  "replication_factor": 5,
+  "source_rows": 121253,
+  "synthetic_rows": 606265,
+  "purpose": "load test only; copied observations are not independent new business data"
+}

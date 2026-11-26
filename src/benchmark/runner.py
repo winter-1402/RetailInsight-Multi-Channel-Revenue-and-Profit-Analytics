@@ -13,11 +13,12 @@ import pandas as pd
 import pyarrow
 from pandas.testing import assert_frame_equal
 
-from src.benchmark.prepare import prepare_tables, raw_hashes
+from src.benchmark.prepare import DIMENSIONS, FACTS, prepare_tables, raw_hashes
 from src.benchmark.mart import hardware_info, spark_session
 from src.benchmark.queries import (
     QUERIES, SQL_DIR, normalize_result, register_spark_tables, run_pandas_query, spark_query)
 from src.utils.config import RAW, ROOT
+from src.ingestion.source import download
 from src.utils.files import file_sha256
 
 
@@ -201,6 +202,8 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'output/sql_benchmark')
     parser.add_argument('--raw-dir', type=Path, default=RAW)
     args = parser.parse_args()
+    if args.raw_dir.resolve() == RAW.resolve() and args.repeats >= 1:
+        download(tables=[*DIMENSIONS, *FACTS])
     run_benchmark(args.output, args.raw_dir, args.repeats, args.seed)
 
 

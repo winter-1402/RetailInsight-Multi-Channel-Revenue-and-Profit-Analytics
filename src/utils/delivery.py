@@ -16,6 +16,14 @@ from src.pipeline.retail import current_run
 from src.ingestion.source import source_columns
 from .config import RAW, ROOT
 
+BENCHMARK_EVIDENCE = ('benchmark.csv', 'benchmark_summary.csv', 'benchmark_environment.json', 'sql_plans.txt')
+QUERY_OUTPUT = re.compile(r'^(?:pandas|duckdb|spark)_(?:monthly|region|category|customer_segments)\.csv$')
+LOAD_NAME = re.compile(r'^(?:load_scale_|scale)\d+_(.+)$')
+
+
+def is_benchmark_evidence(name):
+    return name in BENCHMARK_EVIDENCE or QUERY_OUTPUT.fullmatch(name) is not None
+
 
 def verify_tests(destination=ROOT / 'output' / 'evidence'):
     destination = Path(destination)
@@ -37,19 +45,15 @@ def export_evidence(destination=ROOT / 'output' / 'evidence'):
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=True)
     run = current_run()
-    optional = {'benchmark.csv', 'benchmark_summary.csv', 'benchmark_environment.json',
-        'pandas_monthly.csv', 'pandas_region.csv', 'pandas_category.csv',
-        'spark_monthly.csv', 'spark_region.csv', 'spark_category.csv', 'spark_customer_segments.csv'}
-    load_pattern = re.compile(r'^(?:load_scale_|scale)\d+_(?:benchmark(?:_summary)?\.csv|benchmark_environment\.json|synthetic_provenance\.json)$')
     # Reconcile only owned optional outputs; keep verification logs and reader files.
     for previous in destination.iterdir():
-        if previous.is_file() and (previous.name in optional or load_pattern.fullmatch(previous.name)):
+        load = LOAD_NAME.fullmatch(previous.name)
+        if previous.is_file() and (is_benchmark_evidence(previous.name)
+                or load and (load[1] == 'synthetic_provenance.json' or is_benchmark_evidence(load[1]))):
             previous.unlink()
-    for name in ['manifest.json', 'benchmark.csv', 'benchmark_summary.csv', 'benchmark_environment.json',
-            'pandas_monthly.csv', 'pandas_region.csv', 'pandas_category.csv',
-            'spark_monthly.csv', 'spark_region.csv', 'spark_category.csv', 'spark_customer_segments.csv']:
-        if (run / name).exists():
-            shutil.copyfile(run / name, destination / name)
+    for source in run.iterdir():
+        if source.is_file() and (source.name == 'manifest.json' or is_benchmark_evidence(source.name)):
+            shutil.copyfile(source, destination / source.name)
     for src, name in [('gold/sample_sales.csv', 'sample_sales.csv'),
             ('quality/data_quality.json', 'data_quality.json'), ('quality/summary.csv', 'quality_summary.csv')]:
         shutil.copyfile(run / src, destination / name)
@@ -59,10 +63,10 @@ def export_evidence(destination=ROOT / 'output' / 'evidence'):
     month = monthly_view(fact, fact.order_date.min(), fact.order_date.max(), fact)
     month[['purchase_month', 'revenue_usd', 'gross_profit_usd', 'growth_pct', 'complete', 'comparable']].to_csv(
         destination / 'monthly_sales.csv', index=False)
-    for load in run.glob('load_scale_*'):
-        for name in ['benchmark.csv', 'benchmark_summary.csv', 'benchmark_environment.json', 'synthetic_provenance.json']:
-            if (load / name).exists():
-                shutil.copyfile(load / name, destination / (load.name + '_' + name))
+    for load in run.glob('load_scale_*/'):
+        for source in load.iterdir():
+            if source.is_file() and (source.name == 'synthetic_provenance.json' or is_benchmark_evidence(source.name)):
+                shutil.copyfile(source, destination / f'{load.name}_{source.name}')
     shutil.copyfile(RAW / 'license.txt', destination / 'MICROSOFT_LICENSE.txt')
     schema = (RAW / 'instawdbdw.sql').read_text(encoding='utf-8-sig')
     fields = ['SalesOrderNumber', 'SalesOrderLineNumber', 'OrderDate', 'OrderQuantity',
@@ -90,7 +94,8 @@ def build_package(output=ROOT / 'output/AdventureWorks_Retail_BI_GitHub.zip'):
                 files.append(file)
     for name in ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'requirements.txt', 'pytest.ini',
             '.gitignore', '.gitattributes', 'setup.cmd', 'run.cmd', 'setup.ps1', 'run.ps1',
-            '.streamlit/config.toml', 'output/Bao_cao_pipeline_dashboard.pdf']:
+            '.streamlit/config.toml', '.vscode/settings.json', 'output/Bao_cao_pipeline_dashboard.pdf',
+            'docs/reports/Bao_cao_CO4033_RetailInsight.docx', 'docs/reports/Bao_cao_CO4033_RetailInsight.pdf']:
         file = ROOT / name
         if file.exists():
             files.append(file)

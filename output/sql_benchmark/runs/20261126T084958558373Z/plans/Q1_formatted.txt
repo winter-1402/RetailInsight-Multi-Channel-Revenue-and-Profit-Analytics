@@ -1,0 +1,23 @@
+== Physical Plan ==
+AdaptiveSparkPlan (4)
++- Sort (3)
+   +- Exchange (2)
+      +- LocalTableScan (1)
+
+
+(1) LocalTableScan
+Output [3]: [ProductKey#0L, EnglishProductName#2, list_price_units#3L]
+Arguments: [ProductKey#0L, EnglishProductName#2, list_price_units#3L]
+
+(2) Exchange
+Input [3]: [ProductKey#0L, EnglishProductName#2, list_price_units#3L]
+Arguments: rangepartitioning(ProductKey#0L ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=10557]
+
+(3) Sort
+Input [3]: [ProductKey#0L, EnglishProductName#2, list_price_units#3L]
+Arguments: [ProductKey#0L ASC NULLS FIRST], true, 0
+
+(4) AdaptiveSparkPlan
+Output [3]: [ProductKey#0L, EnglishProductName#2, list_price_units#3L]
+Arguments: isFinalPlan=false
+

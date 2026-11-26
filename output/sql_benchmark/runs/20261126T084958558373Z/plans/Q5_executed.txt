@@ -1,0 +1,41 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 4
+   +- *(4) Sort [purchase_month#2250 ASC NULLS FIRST, channel#20 ASC NULLS FIRST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 3
+            +- Exchange rangepartitioning(purchase_month#2250 ASC NULLS FIRST, channel#20 ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=11800]
+               +- *(3) HashAggregate(keys=[_groupingexpression#2259, channel#20], functions=[sum(revenue_units#24L), sum(cost_units#25L), sum(profit_units#26L), count(distinct order_id#19)], output=[purchase_month#2250, channel#20, revenue_units#2251L, cost_units#2252L, profit_units#2253L, orders#2254L])
+                  +- AQEShuffleRead coalesced
+                     +- ShuffleQueryStage 2
+                        +- Exchange hashpartitioning(_groupingexpression#2259, channel#20, 4), ENSURE_REQUIREMENTS, [plan_id=11770]
+                           +- *(2) HashAggregate(keys=[_groupingexpression#2259, channel#20], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L), partial_count(distinct order_id#19)], output=[_groupingexpression#2259, channel#20, sum#2261L, sum#2263L, sum#2265L, count#2268L])
+                              +- *(2) HashAggregate(keys=[_groupingexpression#2259, channel#20, order_id#19], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L)], output=[_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L])
+                                 +- AQEShuffleRead coalesced
+                                    +- ShuffleQueryStage 1
+                                       +- Exchange hashpartitioning(_groupingexpression#2259, channel#20, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=11727]
+                                          +- *(1) HashAggregate(keys=[_groupingexpression#2259, channel#20, order_id#19], functions=[partial_sum(revenue_units#24L), partial_sum(cost_units#25L), partial_sum(profit_units#26L)], output=[_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L])
+                                             +- *(1) Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, date_format(cast(FullDateAlternateKey#16 as timestamp), yyyy-MM, Some(UTC)) AS _groupingexpression#2259]
+                                                +- *(1) BroadcastHashJoin [OrderDateKey#22L], [DateKey#15L], Inner, BuildRight, false
+                                                   :- Union
+                                                   :  :- LocalTableScan [OrderDateKey#22L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+                                                   :  +- LocalTableScan [OrderDateKey#31L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+                                                   +- BroadcastQueryStage 0
+                                                      +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11610]
+                                                         +- LocalTableScan [DateKey#15L, FullDateAlternateKey#16]
++- == Initial Plan ==
+   Sort [purchase_month#2250 ASC NULLS FIRST, channel#20 ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(purchase_month#2250 ASC NULLS FIRST, channel#20 ASC NULLS FIRST, 4), ENSURE_REQUIREMENTS, [plan_id=11622]
+      +- HashAggregate(keys=[_groupingexpression#2259, channel#20], functions=[sum(revenue_units#24L), sum(cost_units#25L), sum(profit_units#26L), count(distinct order_id#19)], output=[purchase_month#2250, channel#20, revenue_units#2251L, cost_units#2252L, profit_units#2253L, orders#2254L])
+         +- Exchange hashpartitioning(_groupingexpression#2259, channel#20, 4), ENSURE_REQUIREMENTS, [plan_id=11619]
+            +- HashAggregate(keys=[_groupingexpression#2259, channel#20], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L), partial_count(distinct order_id#19)], output=[_groupingexpression#2259, channel#20, sum#2261L, sum#2263L, sum#2265L, count#2268L])
+               +- HashAggregate(keys=[_groupingexpression#2259, channel#20, order_id#19], functions=[merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L)], output=[_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L])
+                  +- Exchange hashpartitioning(_groupingexpression#2259, channel#20, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=11615]
+                     +- HashAggregate(keys=[_groupingexpression#2259, channel#20, order_id#19], functions=[partial_sum(revenue_units#24L), partial_sum(cost_units#25L), partial_sum(profit_units#26L)], output=[_groupingexpression#2259, channel#20, order_id#19, sum#2261L, sum#2263L, sum#2265L])
+                        +- Project [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, date_format(cast(FullDateAlternateKey#16 as timestamp), yyyy-MM, Some(UTC)) AS _groupingexpression#2259]
+                           +- BroadcastHashJoin [OrderDateKey#22L], [DateKey#15L], Inner, BuildRight, false
+                              :- Union
+                              :  :- LocalTableScan [OrderDateKey#22L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+                              :  +- LocalTableScan [OrderDateKey#31L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+                              +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11610]
+                                 +- LocalTableScan [DateKey#15L, FullDateAlternateKey#16]

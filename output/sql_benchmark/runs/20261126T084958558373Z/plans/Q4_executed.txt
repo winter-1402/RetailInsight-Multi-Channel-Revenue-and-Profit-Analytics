@@ -1,0 +1,46 @@
+AdaptiveSparkPlan isFinalPlan=true
++- == Final Plan ==
+   ResultQueryStage 5
+   +- *(4) Sort [CountryRegionCode#14 ASC NULLS LAST, StateProvinceCode#13 ASC NULLS LAST], true, 0
+      +- AQEShuffleRead coalesced
+         +- ShuffleQueryStage 4
+            +- Exchange rangepartitioning(CountryRegionCode#14 ASC NULLS LAST, StateProvinceCode#13 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=11549]
+               +- *(3) HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13], functions=[sum(revenue_units#33L), count(distinct order_id#28)], output=[CountryRegionCode#14, StateProvinceCode#13, revenue_units#2203L, orders#2204L])
+                  +- AQEShuffleRead coalesced
+                     +- ShuffleQueryStage 3
+                        +- Exchange hashpartitioning(CountryRegionCode#14, StateProvinceCode#13, 4), ENSURE_REQUIREMENTS, [plan_id=11519]
+                           +- *(2) HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13], functions=[merge_sum(revenue_units#33L), partial_count(distinct order_id#28)], output=[CountryRegionCode#14, StateProvinceCode#13, sum#2208L, count#2211L])
+                              +- *(2) HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13, order_id#28], functions=[merge_sum(revenue_units#33L)], output=[CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L])
+                                 +- AQEShuffleRead coalesced
+                                    +- ShuffleQueryStage 2
+                                       +- Exchange hashpartitioning(CountryRegionCode#14, StateProvinceCode#13, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=11472]
+                                          +- *(1) HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13, order_id#28], functions=[partial_sum(revenue_units#33L)], output=[CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L])
+                                             +- *(1) Project [order_id#28, revenue_units#33L, StateProvinceCode#13, CountryRegionCode#14]
+                                                +- *(1) BroadcastHashJoin [GeographyKey#9L], [GeographyKey#12L], LeftOuter, BuildRight, false
+                                                   :- *(1) Project [order_id#28, revenue_units#33L, GeographyKey#9L]
+                                                   :  +- *(1) BroadcastHashJoin [ResellerKey#32L], [ResellerKey#8L], Inner, BuildRight, false
+                                                   :     :- *(1) LocalTableScan [order_id#28, ResellerKey#32L, revenue_units#33L]
+                                                   :     +- BroadcastQueryStage 0
+                                                   :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11276]
+                                                   :           +- LocalTableScan [ResellerKey#8L, GeographyKey#9L]
+                                                   +- BroadcastQueryStage 1
+                                                      +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11280]
+                                                         +- LocalTableScan [GeographyKey#12L, StateProvinceCode#13, CountryRegionCode#14]
++- == Initial Plan ==
+   Sort [CountryRegionCode#14 ASC NULLS LAST, StateProvinceCode#13 ASC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(CountryRegionCode#14 ASC NULLS LAST, StateProvinceCode#13 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=11292]
+      +- HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13], functions=[sum(revenue_units#33L), count(distinct order_id#28)], output=[CountryRegionCode#14, StateProvinceCode#13, revenue_units#2203L, orders#2204L])
+         +- Exchange hashpartitioning(CountryRegionCode#14, StateProvinceCode#13, 4), ENSURE_REQUIREMENTS, [plan_id=11289]
+            +- HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13], functions=[merge_sum(revenue_units#33L), partial_count(distinct order_id#28)], output=[CountryRegionCode#14, StateProvinceCode#13, sum#2208L, count#2211L])
+               +- HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13, order_id#28], functions=[merge_sum(revenue_units#33L)], output=[CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L])
+                  +- Exchange hashpartitioning(CountryRegionCode#14, StateProvinceCode#13, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=11285]
+                     +- HashAggregate(keys=[CountryRegionCode#14, StateProvinceCode#13, order_id#28], functions=[partial_sum(revenue_units#33L)], output=[CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L])
+                        +- Project [order_id#28, revenue_units#33L, StateProvinceCode#13, CountryRegionCode#14]
+                           +- BroadcastHashJoin [GeographyKey#9L], [GeographyKey#12L], LeftOuter, BuildRight, false
+                              :- Project [order_id#28, revenue_units#33L, GeographyKey#9L]
+                              :  +- BroadcastHashJoin [ResellerKey#32L], [ResellerKey#8L], Inner, BuildRight, false
+                              :     :- LocalTableScan [order_id#28, ResellerKey#32L, revenue_units#33L]
+                              :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11276]
+                              :        +- LocalTableScan [ResellerKey#8L, GeographyKey#9L]
+                              +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11280]
+                                 +- LocalTableScan [GeographyKey#12L, StateProvinceCode#13, CountryRegionCode#14]

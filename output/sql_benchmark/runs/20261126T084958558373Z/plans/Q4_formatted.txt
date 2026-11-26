@@ -1,0 +1,109 @@
+== Physical Plan ==
+AdaptiveSparkPlan (18)
++- Sort (17)
+   +- Exchange (16)
+      +- HashAggregate (15)
+         +- Exchange (14)
+            +- HashAggregate (13)
+               +- HashAggregate (12)
+                  +- Exchange (11)
+                     +- HashAggregate (10)
+                        +- Project (9)
+                           +- BroadcastHashJoin LeftOuter BuildRight (8)
+                              :- Project (5)
+                              :  +- BroadcastHashJoin Inner BuildRight (4)
+                              :     :- LocalTableScan (1)
+                              :     +- BroadcastExchange (3)
+                              :        +- LocalTableScan (2)
+                              +- BroadcastExchange (7)
+                                 +- LocalTableScan (6)
+
+
+(1) LocalTableScan
+Output [3]: [order_id#28, ResellerKey#32L, revenue_units#33L]
+Arguments: [order_id#28, ResellerKey#32L, revenue_units#33L]
+
+(2) LocalTableScan
+Output [2]: [ResellerKey#8L, GeographyKey#9L]
+Arguments: [ResellerKey#8L, GeographyKey#9L]
+
+(3) BroadcastExchange
+Input [2]: [ResellerKey#8L, GeographyKey#9L]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11276]
+
+(4) BroadcastHashJoin
+Left keys [1]: [ResellerKey#32L]
+Right keys [1]: [ResellerKey#8L]
+Join type: Inner
+Join condition: None
+
+(5) Project
+Output [3]: [order_id#28, revenue_units#33L, GeographyKey#9L]
+Input [5]: [order_id#28, ResellerKey#32L, revenue_units#33L, ResellerKey#8L, GeographyKey#9L]
+
+(6) LocalTableScan
+Output [3]: [GeographyKey#12L, StateProvinceCode#13, CountryRegionCode#14]
+Arguments: [GeographyKey#12L, StateProvinceCode#13, CountryRegionCode#14]
+
+(7) BroadcastExchange
+Input [3]: [GeographyKey#12L, StateProvinceCode#13, CountryRegionCode#14]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=11280]
+
+(8) BroadcastHashJoin
+Left keys [1]: [GeographyKey#9L]
+Right keys [1]: [GeographyKey#12L]
+Join type: LeftOuter
+Join condition: None
+
+(9) Project
+Output [4]: [order_id#28, revenue_units#33L, StateProvinceCode#13, CountryRegionCode#14]
+Input [6]: [order_id#28, revenue_units#33L, GeographyKey#9L, GeographyKey#12L, StateProvinceCode#13, CountryRegionCode#14]
+
+(10) HashAggregate
+Input [4]: [order_id#28, revenue_units#33L, StateProvinceCode#13, CountryRegionCode#14]
+Keys [3]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28]
+Functions [1]: [partial_sum(revenue_units#33L)]
+Aggregate Attributes [1]: [sum(revenue_units#33L)#2205L]
+Results [4]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L]
+
+(11) Exchange
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L]
+Arguments: hashpartitioning(CountryRegionCode#14, StateProvinceCode#13, order_id#28, 4), ENSURE_REQUIREMENTS, [plan_id=11285]
+
+(12) HashAggregate
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L]
+Keys [3]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28]
+Functions [1]: [merge_sum(revenue_units#33L)]
+Aggregate Attributes [1]: [sum(revenue_units#33L)#2205L]
+Results [4]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L]
+
+(13) HashAggregate
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, order_id#28, sum#2208L]
+Keys [2]: [CountryRegionCode#14, StateProvinceCode#13]
+Functions [2]: [merge_sum(revenue_units#33L), partial_count(distinct order_id#28)]
+Aggregate Attributes [2]: [sum(revenue_units#33L)#2205L, count(order_id#28)#2206L]
+Results [4]: [CountryRegionCode#14, StateProvinceCode#13, sum#2208L, count#2211L]
+
+(14) Exchange
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, sum#2208L, count#2211L]
+Arguments: hashpartitioning(CountryRegionCode#14, StateProvinceCode#13, 4), ENSURE_REQUIREMENTS, [plan_id=11289]
+
+(15) HashAggregate
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, sum#2208L, count#2211L]
+Keys [2]: [CountryRegionCode#14, StateProvinceCode#13]
+Functions [2]: [sum(revenue_units#33L), count(distinct order_id#28)]
+Aggregate Attributes [2]: [sum(revenue_units#33L)#2205L, count(order_id#28)#2206L]
+Results [4]: [CountryRegionCode#14, StateProvinceCode#13, sum(revenue_units#33L)#2205L AS revenue_units#2203L, count(order_id#28)#2206L AS orders#2204L]
+
+(16) Exchange
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, revenue_units#2203L, orders#2204L]
+Arguments: rangepartitioning(CountryRegionCode#14 ASC NULLS LAST, StateProvinceCode#13 ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=11292]
+
+(17) Sort
+Input [4]: [CountryRegionCode#14, StateProvinceCode#13, revenue_units#2203L, orders#2204L]
+Arguments: [CountryRegionCode#14 ASC NULLS LAST, StateProvinceCode#13 ASC NULLS LAST], true, 0
+
+(18) AdaptiveSparkPlan
+Output [4]: [CountryRegionCode#14, StateProvinceCode#13, revenue_units#2203L, orders#2204L]
+Arguments: isFinalPlan=false
+

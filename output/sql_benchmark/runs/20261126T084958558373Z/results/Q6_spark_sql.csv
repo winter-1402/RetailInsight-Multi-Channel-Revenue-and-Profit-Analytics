@@ -1,0 +1,170 @@
+CountryRegionCode,StateProvinceCode,ResellerKey,ResellerName,revenue_units,rank
+AU,NSW,573,Nationwide Supply,2211697847,1
+AU,NSW,87,Rich Department Store,1489965063,2
+AU,NSW,393,Gears and Parts Company,1454077395,3
+AU,QLD,177,Plastic Products Manufacturers,390714760,1
+AU,SA,640,Liquidation Sales,616202622,1
+AU,SA,51,Ideal Components,66781080,2
+AU,SA,357,Quality Bike Sales,33038978,3
+AU,VIC,267,Cycle Parts and Accessories,1150856355,1
+AU,VIC,249,Helpful Sales and Repair Service,1067610879,2
+AU,VIC,213,Fast Bike Works,674060456,3
+CA,AB,496,Top Sports Supply,6025598926,1
+CA,AB,352,Twelfth Bike Store,2922348548,2
+CA,AB,354,Serious Cycles,2894892037,3
+CA,BC,514,Retail Mall,7992778953,1
+CA,BC,10,Rural Cycle Emporium,4438618244,2
+CA,BC,173,Sundry Sporting Goods,3843940156,3
+CA,MB,353,Two-Wheeled Transit Company,661932168,1
+CA,NB,299,Citywide Service and Repair,3250229130,1
+CA,ON,678,Vigorous Exercise Company,8419087708,1
+CA,ON,155,Corner Bicycle Supply,7877730436,2
+CA,ON,227,"Health Spa, Limited",7307987139,3
+CA,QC,245,Leather Seat Factory,4728190537,1
+CA,QC,533,Tenth Bike Store,4583731887,2
+CA,QC,119,Red Bicycle Company,3924958789,3
+DE,BB,482,"Fabrikam Inc., East",1165532400,1
+DE,BB,50,Hometown Riding Supplies,1440000,2
+DE,BY,266,Excellent Bikes,1862170681,1
+DE,BY,639,Producer Goods Clearinghouse,127954320,2
+DE,BY,633,Rustic Bike Store,31923709,3
+DE,HE,230,Global Bike Retailers,3377567319,1
+DE,HE,104,Very Best Sports Supply,122401620,2
+DE,HE,212,Enterprise Center,85829460,3
+DE,HH,320,Amalgamated Parts Shop,1973275854,1
+DE,HH,86,Bicycle Exporters,306480940,2
+DE,HH,68,North Bike Company,220900415,3
+DE,NW,687,Functional Store South,1537643535,1
+DE,NW,428,West Wind Distributors,292183575,2
+DE,NW,284,Nearby Bike Mall,264273720,3
+DE,SL,302,Best Cycle Store,2720522258,1
+DE,SL,536,Next Door Cycles,2204966890,2
+DE,SL,176,Rodeway Bike Store,1321437064,3
+FR,31,193,Perfect Toys,3910405897,1
+FR,41,481,Getaway Inn,3202215495,1
+FR,41,121,Metro Sports Equipment,999687104,2
+FR,45,175,Registered Cycle Store,5802223286,1
+FR,45,499,Racing Sales and Service,4092878016,2
+FR,59,662,Finer Sporting Goods,341749217,1
+FR,59,49,Neighborhood Bicycle Storehouse,5603520,2
+FR,62,571,Community Department Stores,546336577,1
+FR,75,638,Metropolitan Equipment,6437458960,1
+FR,75,614,Favorite Toy Distributor,2837458829,2
+FR,75,355,Spare Parts Co.,2539728579,3
+FR,77,283,Racing Supply Distributors,394843158,1
+FR,77,211,Sports Products Store,17327340,2
+FR,91,632,Ultimate Bicycle Company,1479637934,1
+FR,91,67,Self-Contained Cycle Parts Company,44565315,2
+FR,92,85,Roadway Bicycle Supply,4369216551,1
+FR,92,139,Steel Inc.,1475548323,2
+FR,92,686,Finished Parts Shop,357047489,3
+FR,93,103,The Bike Outlet,1053891060,1
+FR,93,319,Cycles Sales and Repair,661263160,2
+FR,93,445,First Center,17180880,3
+FR,94,247,Major Amusement Company,284856641,1
+FR,95,535,Spa and Exercise Outfitters,2096951458,1
+GB,ENG,502,Metropolitan Bicycle Supply,5596209462,1
+GB,ENG,16,Bulk Discount Store,4744018528,2
+GB,ENG,538,Prosperous Tours,3546073253,3
+US,AL,296,Extreme Toy Store,205107350,1
+US,AL,44,Games and Sport Supply Company,180553920,2
+US,AL,387,Racing Association,50904704,3
+US,AZ,475,Real Sporting Goods,3990119466,1
+US,AZ,205,Rally Master Company Inc,3551419808,2
+US,AZ,437,Professional Cycle Store,2479007660,3
+US,CA,167,Farthermost Bike Shop,6935024852,1
+US,CA,24,Eastside Department Store,6362264703,2
+US,CA,608,Golf and Cycle Store,5855164330,3
+US,CO,546,Field Trip Store,6716180296,1
+US,CO,79,Reasonable Bicycle Sales,5720351121,2
+US,CO,523,Futuristic Sport Distributors,3090774105,3
+US,CT,684,Lease-a-Bike Shop,3942606880,1
+US,CT,125,Immediate Repair Shop,2888271098,2
+US,CT,252,Classic Cycle Store,1317243187,3
+US,FL,278,Tread Industries,4319915500,1
+US,FL,81,Rally Day Mall,3346629861,2
+US,FL,530,Valuable Bike Parts Company,2493786837,3
+US,GA,676,Better Bike Shop,4227066026,1
+US,GA,476,Noiseless Gear Company,2936107156,2
+US,GA,584,Qualified Sales and Repair Services,1377158538,3
+US,ID,110,Vintage Sport Boutique,2137519969,1
+US,ID,398,Commendable Bikes,69623778,2
+US,ID,488,Bicycle Accessories and Kits,65873763,3
+US,IL,346,Great Bicycle Supply,2765264031,1
+US,IL,57,Leading Sales & Repair,1462335598,2
+US,IL,622,Gift and Toy Store,496177903,3
+US,IN,234,Eastside Sporting Goods,3577087748,1
+US,IN,414,Grand Discount Store,2922295405,2
+US,IN,396,Executive Gift Store,1462565741,3
+US,KY,297,Blue-Ribbon Bike Company,1126519884,1
+US,KY,441,Leading Bike Distributors,218601360,2
+US,KY,513,Village Tours,146031194,3
+US,MA,107,Wholesale Bikes,415659496,1
+US,MA,486,Convenient Bike Shop,326463226,2
+US,MA,53,Incomparable Bicycle Store,243424729,3
+US,ME,642,Fitness Sport Boutique,2589766809,1
+US,ME,108,Wheelsets Storehouse,2208888490,2
+US,MI,18,Catalog Store,3736584657,1
+US,MI,660,Exhilarating Cycles,3364016610,2
+US,MI,197,"Fabrikam Inc., West",2483688168,3
+US,MN,579,Riders Company,5194113564,1
+US,MN,623,Hardware Components,4084834465,2
+US,MN,562,Practical Bike Supply Company,107178638,3
+US,MO,670,First Bike Store,7118647624,1
+US,MO,327,World of Bikes,2785685700,2
+US,MO,381,Bicycle Lines Distributors,2743955537,3
+US,MS,566,eCommerce Bikes,4460135350,1
+US,MS,423,Bike Rims Company,764638734,2
+US,MS,314,One-Piece Handle Bars,7225949,3
+US,MT,541,Nonskid Tire Company,153192215,1
+US,MT,38,Finer Mart,95300235,2
+US,MT,434,Road-Way Mart,24857036,3
+US,NC,206,New and Used Bicycles,3954131309,1
+US,NC,63,Metro Bike Mart,1491212220,2
+US,NC,700,Underglaze and Finish Company,1206395433,3
+US,NH,72,Outdoor Equipment Store,7463175293,1
+US,NH,618,Seventh Bike Store,4021084720,2
+US,NH,594,Casual Bicycle Store,3570529363,3
+US,NM,221,Bike Dealers Association,4290508730,1
+US,NM,581,Safe Toys,1316009354,2
+US,NM,186,Thrilling Bike Tours,543318353,3
+US,NV,650,Permanent Finish Products,5770895722,1
+US,NV,169,Downtown Hotel,2430145500,2
+US,NV,401,Brightwork Company,1848462361,3
+US,NY,54,Larger Cycle Shop,5375280959,1
+US,NY,233,Fashionable Department Stores,2866451386,2
+US,NY,539,Glossy Bikes,2398531192,3
+US,OH,666,Bike Boutique,2848760711,1
+US,OH,575,Bicycle Outfitters,1827302472,2
+US,OH,179,Fourth Bike Store,1266932424,3
+US,OR,182,Another Bicycle Company,2166536233,1
+US,OR,91,Scooters and Bikes Store,1932586708,2
+US,OR,693,Stock Parts and Supplies,1780666502,3
+US,RI,162,Tire Company,136575288,1
+US,RI,521,Mobile Outlet,13740,2
+US,SC,422,Consolidated Sales,1937085950,1
+US,SC,386,Touring Services,127900805,2
+US,SC,548,New Bikes Company,56702261,3
+US,SD,454,Sleek Bikes,1858595957,1
+US,SD,22,Travel Systems,213393147,2
+US,TN,170,Excellent Riding Supplies,8538491795,1
+US,TN,45,Every Bike Shop,2232853949,2
+US,TN,512,Tiny Bike Boutique,1944231370,3
+US,TX,328,Totes & Baskets Company,8167555763,1
+US,TX,166,Fitness Toy Store,7272726494,2
+US,TX,309,The Gear Store,6186161283,3
+US,UT,697,Brakes and Gears,8771071923,1
+US,UT,293,Fashionable Bikes and Accessories,4153105505,2
+US,UT,43,Frugal Bike Shop,2686607966,3
+US,VA,90,Sales and Supply Company,4167027291,1
+US,VA,17,Trusted Catalog Store,1513310557,2
+US,VA,485,Clamps & Brackets Co.,872701486,3
+US,WA,433,Thorough Parts and Repair Services,7409858338,1
+US,WA,146,Latest Sports Equipment,7242996367,2
+US,WA,236,Closeout Boutique,5365461196,3
+US,WI,418,Good Bike Shop,3927846026,1
+US,WI,453,Unique Bikes,813722260,2
+US,WI,543,Friendly Neighborhood Bikes,111426000,3
+US,WY,506,Great Bikes,7008037857,1
+US,WY,559,Some Discount Store,1090747558,2
+US,WY,380,First Department Stores,402688978,3

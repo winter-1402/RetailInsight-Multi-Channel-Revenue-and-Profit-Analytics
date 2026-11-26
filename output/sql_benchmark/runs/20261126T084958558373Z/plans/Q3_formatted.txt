@@ -1,0 +1,139 @@
+== Physical Plan ==
+AdaptiveSparkPlan (24)
++- Sort (23)
+   +- Exchange (22)
+      +- HashAggregate (21)
+         +- Exchange (20)
+            +- HashAggregate (19)
+               +- HashAggregate (18)
+                  +- Exchange (17)
+                     +- HashAggregate (16)
+                        +- Project (15)
+                           +- BroadcastHashJoin LeftOuter BuildRight (14)
+                              :- Project (11)
+                              :  +- BroadcastHashJoin LeftOuter BuildRight (10)
+                              :     :- Project (7)
+                              :     :  +- BroadcastHashJoin Inner BuildRight (6)
+                              :     :     :- Union (3)
+                              :     :     :  :- LocalTableScan (1)
+                              :     :     :  +- LocalTableScan (2)
+                              :     :     +- BroadcastExchange (5)
+                              :     :        +- LocalTableScan (4)
+                              :     +- BroadcastExchange (9)
+                              :        +- LocalTableScan (8)
+                              +- BroadcastExchange (13)
+                                 +- LocalTableScan (12)
+
+
+(1) LocalTableScan
+Output [6]: [ProductKey#21L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+Arguments: [ProductKey#21L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L]
+
+(2) LocalTableScan
+Output [6]: [ProductKey#30L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+Arguments: [ProductKey#30L, channel#29, order_id#28, revenue_units#33L, cost_units#34L, profit_units#35L]
+
+(3) Union
+
+(4) LocalTableScan
+Output [2]: [ProductKey#0L, ProductSubcategoryKey#1L]
+Arguments: [ProductKey#0L, ProductSubcategoryKey#1L]
+
+(5) BroadcastExchange
+Input [2]: [ProductKey#0L, ProductSubcategoryKey#1L]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10869]
+
+(6) BroadcastHashJoin
+Left keys [1]: [ProductKey#21L]
+Right keys [1]: [ProductKey#0L]
+Join type: Inner
+Join condition: None
+
+(7) Project
+Output [6]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductSubcategoryKey#1L]
+Input [8]: [ProductKey#21L, channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductKey#0L, ProductSubcategoryKey#1L]
+
+(8) LocalTableScan
+Output [2]: [ProductSubcategoryKey#4L, ProductCategoryKey#5L]
+Arguments: [ProductSubcategoryKey#4L, ProductCategoryKey#5L]
+
+(9) BroadcastExchange
+Input [2]: [ProductSubcategoryKey#4L, ProductCategoryKey#5L]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10873]
+
+(10) BroadcastHashJoin
+Left keys [1]: [ProductSubcategoryKey#1L]
+Right keys [1]: [ProductSubcategoryKey#4L]
+Join type: LeftOuter
+Join condition: None
+
+(11) Project
+Output [6]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#5L]
+Input [8]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductSubcategoryKey#1L, ProductSubcategoryKey#4L, ProductCategoryKey#5L]
+
+(12) LocalTableScan
+Output [2]: [ProductCategoryKey#6L, EnglishProductCategoryName#7]
+Arguments: [ProductCategoryKey#6L, EnglishProductCategoryName#7]
+
+(13) BroadcastExchange
+Input [2]: [ProductCategoryKey#6L, EnglishProductCategoryName#7]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=10877]
+
+(14) BroadcastHashJoin
+Left keys [1]: [ProductCategoryKey#5L]
+Right keys [1]: [ProductCategoryKey#6L]
+Join type: LeftOuter
+Join condition: None
+
+(15) Project
+Output [7]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+Input [8]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#5L, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+
+(16) HashAggregate
+Input [7]: [channel#20, order_id#19, revenue_units#24L, cost_units#25L, profit_units#26L, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+Keys [4]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19]
+Functions [3]: [partial_sum(revenue_units#24L), partial_sum(cost_units#25L), partial_sum(profit_units#26L)]
+Aggregate Attributes [3]: [sum(revenue_units#24L)#2108L, sum(cost_units#25L)#2109L, sum(profit_units#26L)#2110L]
+Results [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L]
+
+(17) Exchange
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L]
+Arguments: hashpartitioning(channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, 4), ENSURE_REQUIREMENTS, [plan_id=10882]
+
+(18) HashAggregate
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L]
+Keys [4]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19]
+Functions [3]: [merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L)]
+Aggregate Attributes [3]: [sum(revenue_units#24L)#2108L, sum(cost_units#25L)#2109L, sum(profit_units#26L)#2110L]
+Results [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L]
+
+(19) HashAggregate
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, order_id#19, sum#2113L, sum#2115L, sum#2117L]
+Keys [3]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+Functions [4]: [merge_sum(revenue_units#24L), merge_sum(cost_units#25L), merge_sum(profit_units#26L), partial_count(distinct order_id#19)]
+Aggregate Attributes [4]: [sum(revenue_units#24L)#2108L, sum(cost_units#25L)#2109L, sum(profit_units#26L)#2110L, count(order_id#19)#2111L]
+Results [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, sum#2113L, sum#2115L, sum#2117L, count#2120L]
+
+(20) Exchange
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, sum#2113L, sum#2115L, sum#2117L, count#2120L]
+Arguments: hashpartitioning(channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, 4), ENSURE_REQUIREMENTS, [plan_id=10886]
+
+(21) HashAggregate
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, sum#2113L, sum#2115L, sum#2117L, count#2120L]
+Keys [3]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7]
+Functions [4]: [sum(revenue_units#24L), sum(cost_units#25L), sum(profit_units#26L), count(distinct order_id#19)]
+Aggregate Attributes [4]: [sum(revenue_units#24L)#2108L, sum(cost_units#25L)#2109L, sum(profit_units#26L)#2110L, count(order_id#19)#2111L]
+Results [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, sum(revenue_units#24L)#2108L AS revenue_units#2104L, sum(cost_units#25L)#2109L AS cost_units#2105L, sum(profit_units#26L)#2110L AS profit_units#2106L, count(order_id#19)#2111L AS orders#2107L]
+
+(22) Exchange
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, revenue_units#2104L, cost_units#2105L, profit_units#2106L, orders#2107L]
+Arguments: rangepartitioning(channel#20 ASC NULLS FIRST, ProductCategoryKey#6L ASC NULLS LAST, 4), ENSURE_REQUIREMENTS, [plan_id=10889]
+
+(23) Sort
+Input [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, revenue_units#2104L, cost_units#2105L, profit_units#2106L, orders#2107L]
+Arguments: [channel#20 ASC NULLS FIRST, ProductCategoryKey#6L ASC NULLS LAST], true, 0
+
+(24) AdaptiveSparkPlan
+Output [7]: [channel#20, ProductCategoryKey#6L, EnglishProductCategoryName#7, revenue_units#2104L, cost_units#2105L, profit_units#2106L, orders#2107L]
+Arguments: isFinalPlan=false
+

@@ -1,0 +1,7 @@
+channel,segment,buyers,revenue_units
+Internet,1000_USD_plus,38480,1392364961165
+Internet,200_to_1000_USD,8585,48863914870
+Internet,under_200_USD,45355,26704985000
+Reseller,1000_USD_plus,2995,4021891258275
+Reseller,200_to_1000_USD,120,581013790
+Reseller,under_200_USD,60,57577050

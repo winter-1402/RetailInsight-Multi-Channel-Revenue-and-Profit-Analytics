@@ -6,4 +6,4 @@ DimProductCategory: 4 -> 4; rejected=0
 DimSalesTerritory: 11 -> 11; rejected=0
 DimCurrency: 105 -> 105; rejected=0
 DimReseller: 701 -> 701; rejected=0
-Published run 20261117T024308566452Z; 11.92s
+Published run 20261126T084820790311Z; 11.33s

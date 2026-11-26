@@ -22,7 +22,7 @@ def test_github_package_contains_entrypoints_but_no_raw_data_or_machine_state(tm
         assert 'src/utils/config.py' in names
         assert 'src/utils/report.py' in names
         assert 'src/benchmark/runner.py' in names
-        assert all(f'src/benchmark/sql/Q{i}.sql' in names for i in range(1, 9))
+        assert all(f'sql/benchmarks/Q{i}.sql' in names for i in range(1, 9))
         assert 'src/benchmark/prepare.py' in names
         assert 'src/benchmark/mart.py' in names
         assert 'tests/benchmark/test_sql_benchmark.py' in names
@@ -33,7 +33,10 @@ def test_github_package_contains_entrypoints_but_no_raw_data_or_machine_state(tm
         assert 'output/Bao_cao_pipeline_dashboard.pdf' in names
         assert not any(n.startswith(('data/', '.venv/', '.cache/', '.git/')) for n in names)
         assert not any('olist' in n.lower() for n in names)
-        assert not any(n.endswith(('.pyc', '.docx')) for n in names)
+        public_report = 'docs/reports/Bao_cao_CO4033_RetailInsight'
+        assert public_report + '.pdf' in names
+        assert [name for name in names if name.endswith('.docx')] == [public_report + '.docx']
+        assert not any(n.endswith('.pyc') for n in names)
         extracted = tmp_path / 'extracted'
         zipped.extractall(extracted)
     check = subprocess.run([sys.executable, '-c',
@@ -79,7 +82,7 @@ def test_evidence_export_removes_old_optional_run_outputs_but_keeps_logs(tmp_pat
     destination = tmp_path / 'evidence'
     destination.mkdir()
     stale = ['benchmark.csv', 'spark_monthly.csv', 'pandas_monthly.csv', 'load_scale_5_benchmark.csv',
-        'scale5_synthetic_provenance.json']
+        'load_scale_5_duckdb_customer_segments.csv', 'scale5_synthetic_provenance.json']
     for name in stale:
         (destination / name).write_text('old-run', encoding='utf-8')
     (destination / 'tests.log').write_text('preserved-test-log', encoding='utf-8')

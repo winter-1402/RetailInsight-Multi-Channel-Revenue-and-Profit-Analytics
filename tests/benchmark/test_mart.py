@@ -1,4 +1,6 @@
 import json
+import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -12,6 +14,20 @@ def spark():
     session = benchmark.spark_session()
     yield session
     session.stop()
+
+
+def test_spark_uses_supported_path_when_java_home_is_stale(tmp_path, monkeypatch):
+    monkeypatch.setenv('JAVA_HOME', os.environ.get('JAVA_HOME', ''))
+    benchmark.configure_java()
+    java_home = Path(os.environ['JAVA_HOME'])
+    monkeypatch.setenv('PATH', str(java_home / 'bin'), prepend=os.pathsep)
+    monkeypatch.setenv('JAVA_HOME', str(tmp_path / 'removed-jdk'))
+    session = benchmark.spark_session()
+    try:
+        assert session.sql('SELECT 42 AS result').first().result == 42
+        assert Path(os.environ['JAVA_HOME']).resolve() == java_home.resolve()
+    finally:
+        session.stop()
 
 
 @pytest.mark.parametrize('case', ['empty', 'null_keys', 'large_money', 'loss_and_zero'])
@@ -33,7 +49,9 @@ def test_sql_matches_pandas_on_edge_cases(tmp_path, spark, case):
     path = tmp_path / 'edge.parquet'
     frame.to_parquet(path, index=False)
     spark.read.parquet(path.as_posix()).createOrReplaceTempView('sales')
-    for filename, keys in benchmark.QUERIES.values():
+    for name, (filename, keys) in benchmark.QUERIES.items():
+        if name == 'customer_segments':
+            continue
         actual = spark.sql((benchmark.SQL_DIR / filename).read_text(encoding='utf-8')).toPandas()
         actual = actual.sort_values(keys).reset_index(drop=True)
         baseline = benchmark.pandas_query(path, keys)
@@ -81,14 +99,16 @@ def test_pandas_and_spark_queries_match_hand_calculated_totals(tmp_path):
     frame = pd.DataFrame({'order_id': ['a', 'a', 'b'],
         'party_id': ['u', 'u', 'v'],
         'purchase_month': ['2018-01', '2018-01', '2018-02'],
-        'region': ['SP', 'SP', 'RJ'], 'category': ['x', 'y', 'x'],
+        'region': ['SP', None, 'RJ'], 'category': ['x', 'y', 'x'],
         'channel': ['Internet', 'Internet', 'Reseller'],
         'revenue_units': [1000, 2000, 5000],
         'cost_units': [600, 1000, 5500], 'profit_units': [400, 1000, -500]})
     path = tmp_path / 'fact.parquet'
     frame.to_parquet(path, index=False)
     measurements = compare(path, tmp_path, repeats=1)
-    assert len(measurements) == 6
+    assert len(measurements) == 12
+    assert set(measurements.engine) == {'pandas', 'duckdb', 'spark_sql'}
+    assert set(measurements['query']) == {'monthly', 'region', 'category', 'customer_segments'}
     assert measurements['matches_baseline'].all()
     actual = pd.read_csv(tmp_path / 'spark_monthly.csv')
     assert actual.revenue_units.tolist() == [3000, 5000]
@@ -105,7 +125,7 @@ def test_pandas_and_spark_queries_match_hand_calculated_totals(tmp_path):
     assert metadata['logical_cpus'] > 0
     assert 'ram_bytes' in metadata
     assert set(metadata['sql_sha256']) == {file.name for file in benchmark.SQL_DIR.glob('*.sql')}
-    assert measurements.groupby(['query', 'iteration']).execution_order.apply(list).tolist() == [[1, 2]] * 3
+    assert measurements.groupby(['query', 'iteration']).execution_order.apply(list).tolist() == [[1, 2, 3]] * 4
 
 
 def test_group_mismatch_is_detected_even_when_grand_total_matches(tmp_path, monkeypatch):
